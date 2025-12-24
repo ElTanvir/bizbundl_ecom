@@ -1,10 +1,10 @@
 package util
 
 import (
+	"bizbundl/internal/store"
 	"bytes"
 	"fmt"
 	"hash/fnv"
-	"portfolioed/internal/store"
 	"strings"
 	"sync"
 

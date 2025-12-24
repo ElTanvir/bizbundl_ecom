@@ -1,11 +1,9 @@
 package ui
 
-import "portfolioed/internal/store"
+import "bizbundl/internal/store"
 
 templ BaseComponent(headContent string, title string, showHeader bool) {
-	{{
-		var criticalCSS = store.GetCssVariable()
-	}}
+	{{ var criticalCSS = store.GetCssVariable() }}
 	<!DOCTYPE html>
 	<html lang="en" class="dark">
 		<head>

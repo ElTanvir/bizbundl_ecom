@@ -6,17 +6,19 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
-	CreateCSSVariable(ctx context.Context, arg CreateCSSVariableParams) error
-	CreateLead(ctx context.Context, arg CreateLeadParams) error
-	DeleteCSSVariable(ctx context.Context, name string) error
-	GetAllCSSVariables(ctx context.Context) ([]CssVariable, error)
-	GetCSSVariableByName(ctx context.Context, name string) (CssVariable, error)
-	GetCSSVariablesByType(ctx context.Context, variableType string) ([]CssVariable, error)
-	ListLeadsFiltered(ctx context.Context, arg ListLeadsFilteredParams) ([]Lead, error)
-	UpdateCSSVariable(ctx context.Context, arg UpdateCSSVariableParams) error
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteUser(ctx context.Context, id pgtype.UUID) error
+	GetUserByEmailOrUsername(ctx context.Context, email *string) (User, error)
+	GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
+	HardDeleteUser(ctx context.Context, id pgtype.UUID) error
+	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

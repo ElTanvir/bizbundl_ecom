@@ -1,4 +1,4 @@
-DB_NAME=gtaticSite
+DB_NAME=bizbundl
 DB_USER=hanzo
 DB_PASSWORD=WVO574bJJAtr
 DB_HOST=localhost

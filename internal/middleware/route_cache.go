@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"portfolioed/internal/store"
-	"portfolioed/util"
+	"bizbundl/internal/store"
+	"bizbundl/util"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"

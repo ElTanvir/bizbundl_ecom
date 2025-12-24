@@ -1,11 +1,11 @@
 package server
 
 import (
+	"bizbundl/internal/config"
+	db "bizbundl/internal/db/sqlc"
+	"bizbundl/internal/middleware"
+	"bizbundl/token"
 	"fmt"
-	"portfolioed/internal/config"
-	db "portfolioed/internal/db/sqlc"
-	"portfolioed/internal/middleware"
-	"portfolioed/token"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,12 +17,12 @@ import (
 // Server serves HTTP requests for our banking service.
 type Server struct {
 	config     *config.Config
-	store      db.Store
+	store      db.DBStore
 	tokenMaker token.Maker
 	router     *fiber.App
 }
 
-func NewServer(config *config.Config, store db.Store) (*Server, error) {
+func NewServer(config *config.Config, store db.DBStore) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
@@ -44,7 +44,7 @@ func NewServer(config *config.Config, store db.Store) (*Server, error) {
 		HSTSMaxAge:                31536000,
 		HSTSExcludeSubdomains:     false,
 		HSTSPreloadEnabled:        true,
-		ContentSecurityPolicy:     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net;",
+		ContentSecurityPolicy:     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com;",
 		ReferrerPolicy:            "strict-origin-when-cross-origin",
 		CrossOriginEmbedderPolicy: "credentialless",
 		CrossOriginOpenerPolicy:   "same-origin",
@@ -83,7 +83,7 @@ func (server *Server) Start() error {
 func (server *Server) GetRouter() *fiber.App {
 	return server.router
 }
-func (server *Server) GetDB() db.Store {
+func (server *Server) GetDB() db.DBStore {
 	return server.store
 }
 func (server *Server) GetTokenMaker() token.Maker {

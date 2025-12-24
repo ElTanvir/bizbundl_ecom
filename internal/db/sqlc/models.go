@@ -5,27 +5,68 @@
 package db
 
 import (
-	"time"
+	"database/sql/driver"
+	"fmt"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type CssVariable struct {
-	Name         string     `json:"name"`
-	Value        string     `json:"value"`
-	VariableType string     `json:"variable_type"`
-	IsSystem     bool       `json:"is_system"`
-	CreatedAt    *time.Time `json:"created_at"`
-	UpdatedAt    *time.Time `json:"updated_at"`
+type UserRole string
+
+const (
+	UserRoleUser      UserRole = "user"
+	UserRoleModerator UserRole = "moderator"
+	UserRoleAdmin     UserRole = "admin"
+)
+
+func (e *UserRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRole(s)
+	case string:
+		*e = UserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+	}
+	return nil
 }
 
-type Lead struct {
-	ID        string  `json:"id"`
-	FirstName string  `json:"first_name"`
-	LastName  string  `json:"last_name"`
-	Email     string  `json:"email"`
-	Phone     *string `json:"phone"`
-	Company   *string `json:"company"`
-	Message   *string `json:"message"`
-	Status    string  `json:"status"`
-	Source    *string `json:"source"`
-	CreatedAt string  `json:"created_at"`
+type NullUserRole struct {
+	UserRole UserRole `json:"user_role"`
+	Valid    bool     `json:"valid"` // Valid is true if UserRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRole), nil
+}
+
+type User struct {
+	ID              pgtype.UUID        `json:"id"`
+	Username        *string            `json:"username"`
+	HashedPassword  string             `json:"hashed_password"`
+	FirstName       *string            `json:"first_name"`
+	LastName        *string            `json:"last_name"`
+	FullName        *string            `json:"full_name"`
+	Email           *string            `json:"email"`
+	Phone           *string            `json:"phone"`
+	Role            UserRole           `json:"role"`
+	IsEmailVerified bool               `json:"is_email_verified"`
+	IsActive        bool               `json:"is_active"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
 }

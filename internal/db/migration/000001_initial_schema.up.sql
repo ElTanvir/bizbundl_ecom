@@ -2,29 +2,71 @@
 -- ## UP MIGRATION (optimized)
 -- #############################################################################
 
-CREATE TABLE "leads" (
-    "id"          TEXT PRIMARY KEY,
-    "first_name"  TEXT NOT NULL,
-    "last_name"   TEXT NOT NULL,
-    "email"       TEXT NOT NULL,
-    "phone"       TEXT,
-    "company"     TEXT,
-    "message"     TEXT,
-    "status"      TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'qualified', 'converted', 'lost')),
-    "source"      TEXT,
-    "created_at"  TEXT NOT NULL DEFAULT (datetime('now'))
+
+-- Enable the uuid-ossp extension to use uuid_generate_v4()
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable pg_trgm extension for efficient text search
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
+-- -----------------------------------------------------------------------------
+-- -- Function to automatically update 'updated_at' timestamps
+-- -----------------------------------------------------------------------------
+-- This trigger function is designed to be called before any update on a table.
+-- It sets the 'updated_at' column of the row being updated to the current time.
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = now(); 
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- -----------------------------------------------------------------------------
+-- -- Enums
+-- -----------------------------------------------------------------------------
+CREATE TYPE "user_role" AS ENUM ('user', 'moderator', 'admin');
+
+-- -----------------------------------------------------------------------------
+-- -- Users Table
+-- -----------------------------------------------------------------------------
+-- This table stores user account information.
+CREATE TABLE "users" (
+    "id"            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "username"      VARCHAR(255) UNIQUE,
+    "hashed_password" VARCHAR(255) NOT NULL,
+    "first_name"    VARCHAR(100),
+    "last_name"     VARCHAR(100),
+    "full_name"     VARCHAR(201) GENERATED ALWAYS AS (COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')) STORED,
+    "email"         VARCHAR(255) UNIQUE,
+    "phone"         VARCHAR(20) UNIQUE,
+    "role"          "user_role" NOT NULL DEFAULT 'user',
+    "is_email_verified" BOOLEAN NOT NULL DEFAULT FALSE,
+    "is_active"     BOOLEAN NOT NULL DEFAULT TRUE,
+    "created_at"    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at"    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at"    TIMESTAMPTZ
 );
 
--- Fast dedupe and filtering
-CREATE INDEX IF NOT EXISTS idx_leads_email ON leads (email);
+-- Indexing for the 'users' table
+-- Note: Unique columns (username, email, phone) automatically get indexes, so we don't need to explicitly create them.
 
--- For search
-CREATE INDEX IF NOT EXISTS idx_leads_first_name_lower ON leads (lower(first_name));
-CREATE INDEX IF NOT EXISTS idx_leads_last_name_lower  ON leads (lower(last_name));
-CREATE INDEX IF NOT EXISTS idx_leads_email_lower      ON leads (lower(email));
+-- Index for filtering by role, useful for admin dashboards
+CREATE INDEX ON "users" ("role");
 
--- For filter + sort
-CREATE INDEX IF NOT EXISTS idx_leads_status_created_at ON leads (status, created_at DESC);
+-- Index for sorting by creation time, useful for "newest users" queries
+CREATE INDEX ON "users" ("created_at");
 
--- For export/all queries
-CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads (created_at DESC);
+-- Partial index for soft deletes. This improves performance for queries that
+-- filter out deleted users, which is a very common operation.
+CREATE INDEX ON "users" ("deleted_at") WHERE "deleted_at" IS NULL;
+
+-- GIN indexes for efficient text search using pg_trgm
+CREATE INDEX ON "users" USING GIN ("username" gin_trgm_ops);
+CREATE INDEX ON "users" USING GIN ("email" gin_trgm_ops);
+CREATE INDEX ON "users" USING GIN ("full_name" gin_trgm_ops);
+
+-- Trigger to automatically update the 'updated_at' field on user record changes.
+CREATE TRIGGER update_users_updated_at
+BEFORE UPDATE ON "users"
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();

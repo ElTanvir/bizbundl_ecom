@@ -1,9 +1,9 @@
 package root
 
 import (
-	homepage "portfolioed/internal/modules/root/page"
-	"portfolioed/internal/server"
-	"portfolioed/util"
+	homepage "bizbundl/internal/modules/root/page"
+	"bizbundl/internal/server"
+	"bizbundl/util"
 
 	"github.com/gofiber/fiber/v2"
 )

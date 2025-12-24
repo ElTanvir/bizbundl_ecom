@@ -1,18 +1,17 @@
 package main
 
 import (
-	"database/sql"
-	"os"
-	"portfolioed/internal/cloudflare"
-	"portfolioed/internal/config"
-	db "portfolioed/internal/db/sqlc"
-	"portfolioed/internal/modules/menu"
-	"portfolioed/internal/modules/root"
-	"portfolioed/internal/modules/theme"
-	"portfolioed/internal/server"
-	"portfolioed/util"
+	"bizbundl/internal/cloudflare"
+	"bizbundl/internal/config"
+	db "bizbundl/internal/db/sqlc"
+	"bizbundl/internal/modules/root"
+	"bizbundl/internal/server"
+	"bizbundl/util"
+	"context"
 
-	_ "github.com/mattn/go-sqlite3"
+	"os"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -22,31 +21,28 @@ func main() {
 	if cfg.Environment == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-	conn, err := sql.Open("sqlite3", cfg.DBSource())
+	connPool, err := pgxpool.New(context.Background(), cfg.DBSource())
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot connect to db")
 	}
-	defer conn.Close()
 	migrationDir := "internal/db/migration"
 	if cfg.InDocker == "true" {
 		migrationDir = "/app/internal/db/migration"
 	}
-	err = util.RunMigrations(cfg.DBSource(), migrationDir)
+	err = util.RunMigrations(cfg.DBSourceURL(), migrationDir)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to run migrations")
 	}
 	util.RegisterTagName()
-	dbStore := db.NewStore(conn)
+	dbStore := db.NewStore(connPool)
 	app, err := server.NewServer(cfg, dbStore)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create server")
 	}
-	theme.Init(app)
 	root.Init(app)
-	menu.Init(app)
 	log.Fatal().Err(app.Start()).Msg("failed to start server")
 }
 
-func CacheRuleSetup(){
+func CacheRuleSetup() {
 	cloudflare.Cache()
 }

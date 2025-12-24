@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"bizbundl/token"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
-	"portfolioed/token"
+
 	"github.com/gofiber/fiber/v2"
 )
 
