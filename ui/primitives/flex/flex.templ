@@ -1,0 +1,88 @@
+package flex
+
+import "strings"
+
+type Direction string
+
+const (
+	Row    Direction = "row"
+	Column Direction = "column"
+)
+
+type FlexProps struct {
+	// Breakpoint directions
+	Default Direction // base (no prefix)
+	SM      Direction // sm:
+	MD      Direction // md:
+	LG      Direction // lg:
+	XL      Direction // xl:
+	XXL     Direction // 2xl:
+
+	Class string
+	Extra templ.Attributes
+}
+
+func buildFlexClass(props *FlexProps) string {
+	if props == nil {
+		props = &FlexProps{}
+	}
+
+	var classes []string
+	classes = append(classes, "flex")
+
+	// Build responsive classes with cascading logic
+	directions := map[string]Direction{
+		"":     props.Default,
+		"sm:":  props.SM,
+		"md:":  props.MD,
+		"lg:":  props.LG,
+		"xl:":  props.XL,
+		"2xl:": props.XXL,
+	}
+
+	// Track the current direction for cascading
+	currentDirection := props.Default
+	if currentDirection == "" {
+		currentDirection = Row // Default to row if nothing specified
+	}
+
+	// Add base direction
+	if currentDirection == Column {
+		classes = append(classes, "flex-col")
+	} else {
+		classes = append(classes, "flex-row")
+	}
+
+	// Add responsive classes
+	breakpoints := []string{"sm:", "md:", "lg:", "xl:", "2xl:"}
+	for _, bp := range breakpoints {
+		if directions[bp] != "" {
+			currentDirection = directions[bp]
+		}
+
+		// Only add class if it's different from the previous breakpoint
+		if directions[bp] != "" {
+			if currentDirection == Column {
+				classes = append(classes, bp+"flex-col")
+			} else {
+				classes = append(classes, bp+"flex-row")
+			}
+		}
+	}
+
+	// Add custom class if provided
+	if props.Class != "" {
+		classes = append(classes, props.Class)
+	}
+
+	return strings.Join(classes, " ")
+}
+
+templ New(props *FlexProps) {
+	if props == nil {
+		props = &FlexProps{  }
+	}
+	<div class={ buildFlexClass(props) } { props.Extra... }>
+		{ children... }
+	</div>
+}

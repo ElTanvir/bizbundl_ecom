@@ -1,0 +1,38 @@
+package components
+
+import (
+	"fmt"
+	"portfolioed/ui"
+)
+
+templ HeroSection() {
+	{{
+		heroAnimationClass := fmt.Sprintf("transition-all relative w-full h-full overflow-hidden %s", ui.AnimationDuration)
+	}}
+	<section
+		id="home"
+		class="text-center rounded-2xl lg:w-1/2 overflow-hidden w-full h-[80vh] lg:h-screen lg:sticky lg:top-0"
+		x-data="{ showHero: false }"
+		x-intersect:enter="showHero = true"
+		x-intersect:leave="showHero = false"
+	>
+		<div
+			class={ heroAnimationClass }
+			x-show="showHero"
+			x-transition:enter="ease-out"
+			x-transition:enter-start="transform scale-125"
+			x-transition:enter-end="transform scale-100"
+		>
+			<img
+				src="/static/img/manu_bg.webp"
+				width="1920"
+				height="1080"
+				alt="Delicious food background"
+				class="absolute top-0 left-0 w-full h-full object-cover rounded-2xl"
+				playsinline
+				preload="auto"
+				fetchpriority="high"
+			/>
+		</div>
+	</section>
+}

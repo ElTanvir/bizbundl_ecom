@@ -1,0 +1,6 @@
+tmp
+.kiro/steering
+data/
+uploads/
+*.fiber.gz
+.env

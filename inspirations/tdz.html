@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamDevZero - High-Performance Web & Mobile Apps</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Space+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* NEW Color Palette - Matched to your Logo */
+            --font-body: 'Space Mono', monospace;
+            --font-title: 'Montserrat', sans-serif;
+            --color-surface-dark: #0D0C14; /* Deeper space blue/black */
+            --color-surface-dark-alt: #1a1a1a;
+            --color-on-surface-dark: #d1d1d1;
+            --color-on-surface-dark-strong: #ffffff;
+            --color-primary-dark: #6366F1; /* Indigo from your logo */
+            --color-secondary-dark: #3B82F6; /* Blue from your logo */
+            --color-outline-dark: #2a2a2a;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-surface-dark);
+            color: var(--color-on-surface-dark);
+            overflow: hidden; /* Prevent scrolling on the body */
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-title);
+            color: var(--color-on-surface-dark-strong);
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--color-primary-dark), var(--color-secondary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* --- NEW SKEWED BUTTON STYLES --- */
+        .cta-button {
+            background-color: var(--color-primary-dark);
+            color: var(--color-on-surface-dark-strong);
+            font-family: var(--font-title);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            border-radius: 8px; /* Less rounded corners */
+            transform: skewX(-15deg); /* Add the skew */
+        }
+        
+        .cta-button-text {
+            display: inline-block;
+            transform: skewX(15deg); /* Counter-skew the text */
+        }
+
+        /* --- NEW CLOCKWISE BORDER ANIMATION (FASTER) --- */
+        .cta-button .border-span,
+        .tab-nav-item .border-span {
+            position: absolute;
+            background: linear-gradient(90deg, #6366F1, #3B82F6, #EC4899, #F59E0B, #6366F1);
+            background-size: 400%;
+            animation: rainbow-pulse 4s linear infinite;
+            z-index: -1;
+        }
+
+        /* 1. TOP BORDER (draws right to left) */
+        .cta-button .border-span:nth-child(1),
+        .tab-nav-item .border-span:nth-child(1) {
+            top: 0; right: 0; width: 0; height: 2px;
+            transition: width 0.1s linear 0s;
+        }
+        .cta-button:hover .border-span:nth-child(1),
+        .tab-nav-item.active .border-span:nth-child(1) {
+            width: 100%;
+        }
+
+        /* 2. LEFT BORDER (draws top to bottom) */
+        .cta-button .border-span:nth-child(2),
+        .tab-nav-item .border-span:nth-child(2) {
+            top: 0; left: 0; width: 2px; height: 0;
+            transition: height 0.1s linear 0.1s;
+        }
+        .cta-button:hover .border-span:nth-child(2),
+        .tab-nav-item.active .border-span:nth-child(2) {
+            height: 100%;
+        }
+        
+        /* 3. BOTTOM BORDER (draws left to right) */
+        .cta-button .border-span:nth-child(3),
+        .tab-nav-item .border-span:nth-child(3) {
+            bottom: 0; left: 0; width: 0; height: 2px;
+            transition: width 0.1s linear 0.2s;
+        }
+        .cta-button:hover .border-span:nth-child(3),
+        .tab-nav-item.active .border-span:nth-child(3) {
+            width: 100%;
+        }
+
+        /* 4. RIGHT BORDER (draws bottom to top) */
+        .cta-button .border-span:nth-child(4),
+        .tab-nav-item .border-span:nth-child(4) {
+            bottom: 0; right: 0; width: 2px; height: 0;
+            transition: height 0.1s linear 0.3s;
+        }
+        .cta-button:hover .border-span:nth-child(4),
+        .tab-nav-item.active .border-span:nth-child(4) {
+            height: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px) skewX(-15deg);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            background-color: transparent; /* Make background transparent on hover */
+        }
+        
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            background: var(--color-surface-dark);
+        }
+        .animated-bg > div {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+        }
+        .shape1 { width: 500px; height: 500px; background: var(--color-primary-dark); top: -10%; left: -10%; animation: move 25s infinite alternate; }
+        .shape2 { width: 400px; height: 400px; background: var(--color-secondary-dark); bottom: -15%; right: -5%; animation: move 30s infinite alternate; }
+        .shape3 { width: 300px; height: 300px; background: #8A2BE2; bottom: 20%; left: 15%; animation: move 20s infinite alternate; }
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            100% { transform: translate(10vw, -15vh) scale(1.3) rotate(90deg); }
+        }
+
+        main {
+            perspective: 1500px; /* Crucial for the 3D effect */
+        }
+
+        .page-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            backface-visibility: hidden; /* Prevents flickering during 3D transforms */
+            transform-style: preserve-3d;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 120px 24px 120px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Redesigned Tab Navigation with Animated Border */
+        .tab-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(13, 12, 20, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-outline-dark);
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 30;
+            overflow-x: auto;
+            max-width: 90vw;
+        }
+        .tab-nav-item {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: color 0.3s ease, background-color 0.3s ease;
+            white-space: nowrap;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            background-color: transparent;
+        }
+        
+        .tab-nav-item.active {
+            color: var(--color-on-surface-dark-strong);
+            background-color: var(--color-surface-dark-alt); /* This covers the animated spans, leaving only the border visible */
+        }
+        
+        /* Unique Nav Link Hover Effect */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--color-primary-dark);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease-out;
+        }
+        .nav-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        /* Ticker Overlay Styles */
+        .ticker-overlay {
+            position: fixed;
+            inset: -10%;
+            width: 120%;
+            height: 120%;
+            z-index: 0;
+            pointer-events: none;
+            transform: rotate(-15deg);
+            opacity: 0.05;
+        }
+        .ticker-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        .ticker-row:nth-child(even) .ticker-track {
+            animation-direction: reverse;
+        }
+        .ticker-track {
+            display: flex;
+            width: fit-content;
+            animation: scroll 20s linear infinite; /* Faster scroll */
+        }
+        .ticker-item {
+            height: 60px;
+            margin: 0 40px;
+            filter: grayscale(1) brightness(5);
+        }
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Foreground Ticker Styles */
+        .foreground-ticker-wrapper {
+            padding: 2px; /* Even thinner border */
+            background: linear-gradient(90deg, #6366F1, #3B82F6, #EC4899, #F59E0B, #6366F1);
+            background-size: 200% 200%;
+            animation: rainbow-pulse 4s ease infinite;
+            border-radius: 12px;
+            transform: rotate(-3deg) scaleX(1.15); /* Angled and stretched ticker */
+        }
+        .foreground-ticker {
+            background-color: var(--color-surface-dark);
+            border-radius: 8px;
+            padding: 20px 0;
+            overflow: hidden;
+        }
+        .foreground-ticker .ticker-track {
+            animation-duration: 30s;
+        }
+        .foreground-ticker .ticker-item {
+            height: 40px;
+            filter: grayscale(1) brightness(1.5);
+            opacity: 0.8;
+            transition: all 0.3s;
+        }
+        .foreground-ticker .ticker-item:hover {
+            filter: grayscale(0) brightness(1);
+            opacity: 1;
+        }
+        @keyframes rainbow-pulse {
+            0%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+            100%{background-position:0% 50%}
+        }
+
+        /* Custom 3D Transform Utilities */
+        .rotate-y-90 { transform: rotateY(90deg); }
+        .-rotate-y-90 { transform: rotateY(-90deg); }
+        .rotate-y-0 { transform: rotateY(0deg); }
+    </style>
+</head>
+<body class="antialiased" x-data="{ currentPage: 'home', mobileMenuOpen: false }">
+    <div class="animated-bg">
+        <div class="shape1"></div>
+        <div class="shape2"></div>
+        <div class="shape3"></div>
+    </div>
+    
+    <!-- Ticker Overlay -->
+    <div class="ticker-overlay">
+        <template x-for="i in 12" :key="i">
+            <div class="ticker-row">
+                <div class="ticker-track">
+                    <template x-for="j in 2" :key="j">
+                        <div class="flex items-center">
+                            <img src="https://placehold.co/150x60/0D0C14/ffffff?text=ClientA" alt="Client A" class="ticker-item">
+                            <img src="https://placehold.co/150x60/0D0C14/ffffff?text=ClientB" alt="Client B" class="ticker-item">
+                            <img src="https://placehold.co/150x60/0D0C14/ffffff?text=ClientC" alt="Client C" class="ticker-item">
+                            <img src="https://placehold.co/150x60/0D0C14/ffffff?text=ClientD" alt="Client D" class="ticker-item">
+                            <img src="https://placehold.co/150x60/0D0C14/ffffff?text=ClientE" alt="Client E" class="ticker-item">
+                            <img src="https://placehold.co/150x60/0D0C14/ffffff?text=ClientF" alt="Client F" class="ticker-item">
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-20 py-6 px-4 sm:px-6 lg:px-8 bg-transparent">
+        <div class="container mx-auto flex justify-between items-center">
+            <img src="image_37b888.png" alt="TeamDevZero Logo" class="h-10 cursor-pointer" @click.prevent="currentPage = 'home'">
+            
+            <nav class="hidden md:flex space-x-10 items-center">
+                <a href="#" @click.prevent="currentPage = 'home'" :class="{'text-white': currentPage === 'home', 'text-gray-400': currentPage !== 'home'}" class="hover:text-white transition-colors nav-link">Home</a>
+                <a href="#" @click.prevent="currentPage = 'services'" :class="{'text-white': currentPage === 'services', 'text-gray-400': currentPage !== 'services'}" class="hover:text-white transition-colors nav-link">Services</a>
+                <a href="#" @click.prevent="currentPage = 'work'" :class="{'text-white': currentPage === 'work', 'text-gray-400': currentPage !== 'work'}" class="hover:text-white transition-colors nav-link">Work</a>
+                <a href="#" @click.prevent="currentPage = 'team'" :class="{'text-white': currentPage === 'team', 'text-gray-400': currentPage !== 'team'}" class="hover:text-white transition-colors nav-link">Team</a>
+            </nav>
+            <a href="#" @click.prevent="currentPage = 'contact'" class="hidden md:block cta-button px-6 py-2">
+                <span class="border-span"></span><span class="border-span"></span><span class="border-span"></span><span class="border-span"></span>
+                <span class="cta-button-text">Get a Quote</span>
+            </a>
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden z-30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenuOpen" @click.away="mobileMenuOpen = false" class="fixed inset-0 bg-[var(--color-surface-dark)] z-50 md:hidden" x-transition>
+        <nav class="flex flex-col items-center justify-center h-full space-y-8 text-2xl">
+            <a href="#" @click.prevent="currentPage = 'home'; mobileMenuOpen = false">Home</a>
+            <a href="#" @click.prevent="currentPage = 'services'; mobileMenuOpen = false">Services</a>
+            <a href="#" @click.prevent="currentPage = 'work'; mobileMenuOpen = false">Work</a>
+            <a href="#" @click.prevent="currentPage = 'team'; mobileMenuOpen = false">Team</a>
+            <a href="#" @click.prevent="currentPage = 'contact'; mobileMenuOpen = false" class="cta-button px-8 py-3">
+                 <span class="border-span"></span><span class="border-span"></span><span class="border-span"></span><span class="border-span"></span>
+                <span class="cta-button-text">Get a Quote</span>
+            </a>
+        </nav>
+    </div>
+
+    <main class="relative z-10">
+        <!-- HOME PAGE -->
+        <div x-show="currentPage === 'home'" class="page-container" 
+            x-transition:enter="transition ease-out duration-700"
+            x-transition:enter-start="opacity-0 rotate-y-90"
+            x-transition:enter-end="opacity-100 rotate-y-0"
+            x-transition:leave="transition ease-in duration-500"
+            x-transition:leave-start="opacity-100 rotate-y-0"
+            x-transition:leave-end="opacity-0 -rotate-y-90">
+            <div class="flex-grow flex flex-col items-center justify-center">
+                <div class="text-center w-full max-w-4xl mx-auto px-4 mb-16">
+                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight tracking-tighter">
+                        We Build <span class="gradient-text">Digital</span> Experiences
+                    </h1>
+                    <p class="max-w-2xl mx-auto text-lg md:text-xl text-on-surface-dark">
+                        From sleek Flutter apps to robust Golang backends, we are the dedicated partner you need to bring your vision to life.
+                    </p>
+                </div>
+                    
+                <!-- New Foreground Ticker -->
+                <div class="w-full">
+                    <div class="foreground-ticker-wrapper">
+                        <div class="foreground-ticker">
+                             <div class="ticker-track">
+                                <template x-for="k in 2" :key="k">
+                                    <div class="flex items-center">
+                                        <img src="https://placehold.co/150x50/0D0C14/ffffff?text=ClientA" alt="Client A" class="ticker-item">
+                                        <img src="https://placehold.co/150x50/0D0C14/ffffff?text=ClientB" alt="Client B" class="ticker-item">
+                                        <img src="https://placehold.co/150x50/0D0C14/ffffff?text=ClientC" alt="Client C" class="ticker-item">
+                                        <img src="https://placehold.co/150x50/0D0C14/ffffff?text=ClientD" alt="Client D" class="ticker-item">
+                                        <img src="https://placehold.co/150x50/0D0C14/ffffff?text=ClientE" alt="Client E" class="ticker-item">
+                                    </div>
+                                </template>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="#" @click.prevent="currentPage = 'contact'" class="cta-button px-10 py-4 text-lg mt-16">
+                     <span class="border-span"></span><span class="border-span"></span><span class="border-span"></span><span class="border-span"></span>
+                    <span class="cta-button-text">Start Your Project</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- SERVICES SLIDER -->
+        <div x-show="currentPage === 'services'" class="page-container" 
+             x-data="{ 
+                currentSlide: 0, 
+                services: [
+                    { title: 'Mobile Apps', desc: 'Stunning, high-performance cross-platform apps built with Flutter.', tech: 'Flutter' },
+                    { title: 'Frontend', desc: 'Modern, responsive, and blazing-fast websites for an optimal user experience.', tech: 'Next.js, React, Go+Templ' },
+                    { title: 'Backend', desc: 'Scalable, secure, and efficient server-side solutions for your applications.', tech: 'Golang, Node.js, Laravel' },
+                    { title: 'WordPress', desc: 'Custom themes, plugins, and full website development on the world\'s most popular CMS.', tech: 'WordPress' }
+                ],
+                autoplay() {
+                    let timer = setInterval(() => {
+                        this.currentSlide = (this.currentSlide + 1) % this.services.length;
+                    }, 5000);
+                    $watch('currentSlide', () => {
+                        clearInterval(timer);
+                        timer = setInterval(() => { this.currentSlide = (this.currentSlide + 1) % this.services.length; }, 5000);
+                    });
+                }
+             }"
+             x-init="autoplay()"
+            x-transition:enter="transition ease-out duration-700"
+            x-transition:enter-start="opacity-0 rotate-y-90"
+            x-transition:enter-end="opacity-100 rotate-y-0"
+            x-transition:leave="transition ease-in duration-500"
+            x-transition:leave-start="opacity-100 rotate-y-0"
+            x-transition:leave-end="opacity-0 -rotate-y-90">
+            <template x-for="(service, index) in services" :key="index">
+                <div x-show="currentSlide === index" class="slide" x-transition:enter="transition ease-in-out duration-700" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in-out duration-500" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+                    <div class="text-center max-w-3xl">
+                        <h2 class="text-4xl md:text-6xl font-black mb-6" x-text="service.title"></h2>
+                        <p class="text-lg md:text-xl mb-6 text-on-surface-dark" x-text="service.desc"></p>
+                        <span class="inline-block bg-primary-dark/20 text-primary-dark px-4 py-2 rounded-full font-bold" x-text="service.tech"></span>
+                    </div>
+                </div>
+            </template>
+            <div class="tab-nav">
+                <template x-for="(service, index) in services" :key="index">
+                    <button @click="currentSlide = index" class="tab-nav-item" :class="{'active': currentSlide === index}">
+                        <span class="border-span"></span><span class="border-span"></span><span class="border-span"></span><span class="border-span"></span>
+                        <span x-text="service.title"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+        
+        <!-- TEAM SLIDER -->
+        <div x-show="currentPage === 'team'" class="page-container" 
+             x-data="{ 
+                currentSlide: 0, 
+                team: [
+                    { name: 'Alex Johnson', title: 'Lead Go/Flutter Developer', img: 'https://placehold.co/400x400/1a1a1a/e5e5e5?text=A' },
+                    { name: 'Jane Doe', title: 'Senior Frontend Engineer', img: 'https://placehold.co/400x400/1a1a1a/e5e5e5?text=J' },
+                    { name: 'Sam Wilson', title: 'Backend Specialist', img: 'https://placehold.co/400x400/1a1a1a/e5e5e5?text=S' }
+                ],
+                autoplay() {
+                    let timer = setInterval(() => {
+                        this.currentSlide = (this.currentSlide + 1) % this.team.length;
+                    }, 5000);
+                    $watch('currentSlide', () => {
+                        clearInterval(timer);
+                        timer = setInterval(() => { this.currentSlide = (this.currentSlide + 1) % this.team.length; }, 5000);
+                    });
+                }
+             }"
+             x-init="autoplay()"
+            x-transition:enter="transition ease-out duration-700"
+            x-transition:enter-start="opacity-0 rotate-y-90"
+            x-transition:enter-end="opacity-100 rotate-y-0"
+            x-transition:leave="transition ease-in duration-500"
+            x-transition:leave-start="opacity-100 rotate-y-0"
+            x-transition:leave-end="opacity-0 -rotate-y-90">
+            <template x-for="(member, index) in team" :key="index">
+                <div x-show="currentSlide === index" class="slide" x-transition:enter="transition ease-in-out duration-700" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in-out duration-500" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+                    <div class="text-center">
+                        <img :src="member.img" :alt="member.name" class="w-48 h-48 md:w-64 md:h-64 rounded-full mx-auto mb-8 border-4 border-outline-dark shadow-2xl">
+                        <h2 class="text-4xl md:text-5xl font-black" x-text="member.name"></h2>
+                        <p class="text-xl text-primary-dark" x-text="member.title"></p>
+                    </div>
+                </div>
+            </template>
+            <div class="tab-nav">
+                <template x-for="(member, index) in team" :key="index">
+                    <button @click="currentSlide = index" class="tab-nav-item" :class="{'active': currentSlide === index}">
+                        <span class="border-span"></span><span class="border-span"></span><span class="border-span"></span><span class="border-span"></span>
+                        <span x-text="member.name"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <!-- WORK SLIDER -->
+         <div x-show="currentPage === 'work'" class="page-container" 
+             x-data="{ 
+                currentSlide: 0, 
+                projects: [
+                    { name: 'Fintech App', desc: 'A secure Flutter application for personal finance management.', tech: 'Flutter & Go', img: 'https://placehold.co/800x600/111111/ffffff?text=Project+One' },
+                    { name: 'E-commerce', desc: 'A high-traffic online store built with Next.js for superior performance.', tech: 'Next.js & Node.js', img: 'https://placehold.co/800x600/111111/ffffff?text=Project+Two' }
+                ],
+                autoplay() {
+                    let timer = setInterval(() => {
+                        this.currentSlide = (this.currentSlide + 1) % this.projects.length;
+                    }, 5000);
+                    $watch('currentSlide', () => {
+                        clearInterval(timer);
+                        timer = setInterval(() => { this.currentSlide = (this.currentSlide + 1) % this.projects.length; }, 5000);
+                    });
+                }
+             }"
+             x-init="autoplay()"
+            x-transition:enter="transition ease-out duration-700"
+            x-transition:enter-start="opacity-0 rotate-y-90"
+            x-transition:enter-end="opacity-100 rotate-y-0"
+            x-transition:leave="transition ease-in duration-500"
+            x-transition:leave-start="opacity-100 rotate-y-0"
+            x-transition:leave-end="opacity-0 -rotate-y-90">
+            <template x-for="(project, index) in projects" :key="index">
+                <div x-show="currentSlide === index" class="slide" x-transition:enter="transition ease-in-out duration-700" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in-out duration-500" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+                    <div class="grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
+                        <div class="text-center lg:text-left">
+                           <h2 class="text-4xl md:text-6xl font-black mb-6" x-text="project.name"></h2>
+                           <p class="text-lg md:text-xl mb-6 text-on-surface-dark" x-text="project.desc"></p>
+                           <span class="inline-block bg-primary-dark/20 text-primary-dark px-4 py-2 rounded-full font-bold" x-text="project.tech"></span>
+                        </div>
+                        <img :src="project.img" :alt="project.name" class="rounded-lg shadow-2xl border border-outline-dark">
+                    </div>
+                </div>
+            </template>
+            <div class="tab-nav">
+                <template x-for="(project, index) in projects" :key="index">
+                    <button @click="currentSlide = index" class="tab-nav-item" :class="{'active': currentSlide === index}">
+                        <span class="border-span"></span><span class="border-span"></span><span class="border-span"></span><span class="border-span"></span>
+                        <span x-text="project.name"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+        
+        <!-- CONTACT PAGE -->
+        <div x-show="currentPage === 'contact'" class="page-container" 
+            x-transition:enter="transition ease-out duration-700"
+            x-transition:enter-start="opacity-0 rotate-y-90"
+            x-transition:enter-end="opacity-100 rotate-y-0"
+            x-transition:leave="transition ease-in duration-500"
+            x-transition:leave-start="opacity-100 rotate-y-0"
+            x-transition:leave-end="opacity-0 -rotate-y-90">
+            <div class="flex-grow flex items-center justify-center text-center px-4">
+                 <div class="max-w-3xl">
+                    <h2 class="text-5xl md:text-7xl font-black">Have a project in mind?</h2>
+                    <p class="text-lg mt-4 mb-8 text-on-surface-dark">Let's build something amazing together. Reach out and we'll get back to you within 24 hours.</p>
+                    <a href="mailto:contact@teamdevzero.com" class="cta-button px-12 py-5 text-xl inline-block">
+                         <span class="border-span"></span><span class="border-span"></span><span class="border-span"></span><span class="border-span"></span>
+                        <span class="cta-button-text">contact@teamdevzero.com</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+</html>
+
+

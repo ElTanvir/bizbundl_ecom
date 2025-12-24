@@ -1,0 +1,46 @@
+package components
+
+templ ToolKitSection() {
+	<!-- 
+          SECTION 2: "My Toolkit" (Logo Ticker)
+          Strategy: Replaces "Trusted By" with a more relevant "Toolkit." This immediately shows 
+          the software proficiency (a key client question) in the "scrapbook" style.
+        -->
+	<section
+		class="relative"
+		x-data="{ showToolkit: false }"
+		x-intersect:enter="showToolkit = true"
+		x-intersect:leave="showToolkit = false"
+		x-show="showToolkit"
+		x-transition:enter="transition ease-out duration-1000"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-300"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+	>
+		<h3
+			class="text-center font-[var(--font-title)] font-bold text-sm uppercase text-[var(--color-on-surface)] tracking-widest mb-8"
+		>
+			My Go-To Productivity Toolkit
+		</h3>
+		<!-- Using simple text "stickers" as logos aren't allowed -->
+		<div class="flex flex-wrap justify-center items-center gap-6 md:gap-10">
+			<span
+				class="font-[var(--font-title)] font-black text-2xl text-[var(--color-on-surface-strong)] p-3 bg-[var(--color-outline)]/50 rounded-lg -rotate-3 transition-transform hover:scale-110"
+			>Google Workspace</span>
+			<span
+				class="font-[var(--font-title)] font-black text-2xl text-[var(--color-on-surface-strong)] p-3 bg-[var(--color-outline)]/50 rounded-lg rotate-2 transition-transform hover:scale-110"
+			>Microsoft 365</span>
+			<span
+				class="font-[var(--font-title)] font-black text-2xl text-[var(--color-on-surface-strong)] p-3 bg-[var(--color-outline)]/50 rounded-lg -rotate-1 transition-transform hover:scale-110"
+			>Slack</span>
+			<span
+				class="font-[var(--font-title)] font-black text-2xl text-[var(--color-on-surface-strong)] p-3 bg-[var(--color-outline)]/50 rounded-lg rotate-1 transition-transform hover:scale-110"
+			>Notion</span>
+			<span
+				class="font-[var(--font-title)] font-black text-2xl text-[var(--color-on-surface-strong)] p-3 bg-[var(--color-outline)]/50 rounded-lg -rotate-2 transition-transform hover:scale-110"
+			>Asana</span>
+		</div>
+	</section>
+}

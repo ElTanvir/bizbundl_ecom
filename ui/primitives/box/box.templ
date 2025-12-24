@@ -1,0 +1,83 @@
+package box
+
+import "fmt"
+
+const (
+	boxBaseClass = "w-full bg-surface text-on-surface"
+)
+
+var boxVariantClasses = map[string]string{
+	"default":   "shadow-sm rounded-[var(--radius-radius)]",
+	"soft":      "shadow-sm bg-surface-alt rounded-[var(--radius-radius)]",
+	"floating":  "shadow-lg rounded-[var(--radius-radius)]",
+	"elevated":  "shadow-xl border-2 border-outline-strong rounded-[var(--radius-radius)]",
+	"flat":      "shadow-none rounded-[var(--radius-radius)]",
+	"container": "shadow-none",
+}
+
+var boxPaddingClasses = map[string]string{
+	"none": "",
+	"sm":   "p-3",
+	"md":   "p-4",
+	"lg":   "p-6",
+	"xl":   "p-8",
+}
+
+var boxSizeClasses = map[string]string{
+	"default": "max-w-7xl",
+	"sm":      "max-w-sm",
+	"md":      "max-w-md",
+	"lg":      "max-w-lg",
+	"xl":      "max-w-xl",
+	"2xl":     "max-w-2xl",
+	"3xl":     "max-w-3xl",
+	"4xl":     "max-w-4xl",
+	"5xl":     "max-w-5xl",
+	"6xl":     "max-w-6xl",
+}
+
+type BoxProps struct {
+	Variant string
+	Size    string
+	Padding string
+	Border  bool
+	Class   string
+	Extra   templ.Attributes
+}
+
+func buildBoxClass(props *BoxProps) string {
+	if props == nil {
+		props = &BoxProps{}
+	}
+	if props.Variant == "" {
+		props.Variant = "default"
+	}
+	if props.Size == "" {
+		props.Size = "default"
+	}
+	if props.Padding == "" {
+		props.Padding = "none"
+	}
+
+	borderClass := ""
+	if props.Border {
+		borderClass = "border border-outline"
+	}
+
+	return fmt.Sprintf("%s %s %s %s %s %s",
+		boxBaseClass,
+		borderClass,
+		boxVariantClasses[props.Variant],
+		boxSizeClasses[props.Size],
+		boxPaddingClasses[props.Padding],
+		props.Class)
+}
+
+templ New(props *BoxProps) {
+	if props == nil {
+		props = &BoxProps{  }
+	}
+	<div class={ buildBoxClass(props) } { props.Extra... }>
+		{ children... }
+	</div>
+}

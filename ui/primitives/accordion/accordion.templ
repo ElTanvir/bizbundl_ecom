@@ -1,0 +1,129 @@
+package accordion
+
+import "strings"
+
+type AccordionProps struct {
+	Class string
+	Extra templ.Attributes
+}
+
+type AccordionItemProps struct {
+	Title   string
+	Content string
+	Class   string
+	Extra   templ.Attributes
+}
+
+const (
+	accordionBaseClass     = "w-full space-y-2"
+	accordionItemBaseClass = "border border-outline rounded-[var(--radius-radius)] bg-surface text-on-surface " +
+		"transition-all duration-300 ease-in-out"
+	accordionButtonBaseClass = "flex items-center justify-between w-full px-4 py-3 " +
+		"text-left font-medium hover:bg-surface-alt hover:text-on-surface-strong " +
+		"focus:outline-none rounded-[var(--radius-radius)] transition-colors duration-200"
+	accordionContentBaseClass = "px-4 pb-3 text-on-surface"
+	accordionIconBaseClass    = "w-4 h-4 transition-transform duration-300 ease-in-out"
+)
+
+func buildAccordionClass(props *AccordionProps) string {
+	if props == nil {
+		props = &AccordionProps{}
+	}
+
+	var classes []string
+	classes = append(classes, accordionBaseClass)
+
+	if props.Class != "" {
+		classes = append(classes, props.Class)
+	}
+
+	return strings.Join(classes, " ")
+}
+
+func buildAccordionItemClass(props *AccordionItemProps) string {
+	if props == nil {
+		props = &AccordionItemProps{}
+	}
+
+	var classes []string
+	classes = append(classes, accordionItemBaseClass)
+
+	if props.Class != "" {
+		classes = append(classes, props.Class)
+	}
+
+	return strings.Join(classes, " ")
+}
+
+templ New(props *AccordionProps) {
+	if props == nil {
+		props = &AccordionProps{  }
+	}
+	<div
+		x-data="{ activeAccordion: '', setActiveAccordion(id) { this.activeAccordion = (this.activeAccordion == id) ? '' : id } }"
+		class={ buildAccordionClass(props) }
+		{ props.Extra... }
+	>
+		{ children... }
+	</div>
+}
+
+templ Item(props *AccordionItemProps) {
+	if props == nil {
+		props = &AccordionItemProps{  }
+	}
+	<div
+		x-data="{ id: $id('accordion') }"
+		:class="{ 'border-primary bg-surface-alt': activeAccordion==id }"
+		class={ buildAccordionItemClass(props) }
+		{ props.Extra... }
+	>
+		<button @click="setActiveAccordion(id)" class={ accordionButtonBaseClass }>
+			<span>{ props.Title }</span>
+			<svg
+				:class="{ 'rotate-180': activeAccordion==id }"
+				class={ accordionIconBaseClass }
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+			</svg>
+		</button>
+		<div x-show="activeAccordion==id" x-collapse.duration.300ms x-cloak>
+			<div class={ accordionContentBaseClass }>
+				{ props.Content }
+			</div>
+		</div>
+	</div>
+}
+
+templ ItemWithContent(title string, props *AccordionItemProps) {
+	if props == nil {
+		props = &AccordionItemProps{  }
+	}
+	<div
+		x-data="{ id: $id('accordion') }"
+		:class="{ 'border-primary bg-surface-alt': activeAccordion==id }"
+		class={ buildAccordionItemClass(props) }
+		{ props.Extra... }
+	>
+		<button @click="setActiveAccordion(id)" class={ accordionButtonBaseClass }>
+			<span>{ title }</span>
+			<svg
+				:class="{ 'rotate-180': activeAccordion==id }"
+				class={ accordionIconBaseClass }
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+			</svg>
+		</button>
+		<div x-show="activeAccordion==id" x-collapse.duration.300ms x-cloak>
+			<div class={ accordionContentBaseClass }>
+				{ children... }
+			</div>
+		</div>
+	</div>
+}

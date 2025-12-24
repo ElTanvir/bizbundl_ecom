@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@theme {
+  /* Colors - mapped to CSS variables that will be dynamically generated */
+  --color-surface: var(--color-surface);
+  --color-surface-alt: var(--color-surface-alt);
+  --color-on-surface: var(--color-on-surface);
+  --color-on-surface-strong: var(--color-on-surface-strong);
+  --color-surface-dark: var(--color-surface-dark);
+  --color-surface-dark-alt: var(--color-surface-dark-alt);
+  --color-on-surface-dark: var(--color-on-surface-dark);
+  --color-on-surface-dark-strong: var(--color-on-surface-dark-strong);
+  --color-primary: var(--color-primary);
+  --color-on-primary: var(--color-on-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-on-primary-dark: var(--color-on-primary-dark);
+  --color-secondary: var(--color-secondary);
+  --color-on-secondary: var(--color-on-secondary);
+  --color-secondary-dark: var(--color-secondary-dark);
+  --color-on-secondary-dark: var(--color-on-secondary-dark);
+  --color-outline: var(--color-outline);
+  --color-outline-strong: var(--color-outline-strong);
+  --color-outline-dark: var(--color-outline-dark);
+  --color-outline-dark-strong: var(--color-outline-dark-strong);
+  --color-info: var(--color-info);
+  --color-on-info: var(--color-on-info);
+  --color-success: var(--color-success);
+  --color-on-success: var(--color-on-success);
+  --color-warning: var(--color-warning);
+  --color-on-warning: var(--color-on-warning);
+  --color-danger: var(--color-danger);
+  --color-on-danger: var(--color-on-danger);
+
+  /* Fonts */
+  --font-body: var(--font-body);
+  --font-title: var(--font-title);
+
+  /* Border Radius - will be overridden by dynamic CSS */
+  --radius-none: var(--radius-none);
+  --radius-radius: var(--radius-radius);
+}
+
+@layer base {
+  html{
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}

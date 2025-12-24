@@ -1,0 +1,139 @@
+package components
+
+templ AboutSection() {
+	<!-- 
+          SECTIONS 3 & 4: Introduction (About Me) + Profile Card
+          Strategy: Implements the "Asymmetrical" layout from the Design System.
+          The "About Me" text builds rapport, focusing on the *value* of organization, not just
+          her life story. The "Profile Card" is the "floating card" element.
+        -->
+	<section
+		class="relative"
+		x-data="{ showAbout: false }"
+		x-intersect.once="showAbout = true"
+	>
+		<!-- Doodle -->
+		<svg
+			class="absolute -bottom-16 -right-8 w-16 h-16 text-[var(--color-warning)] opacity-30 transform rotate-12"
+			x-show="showAbout"
+			x-transition:enter="transition ease-out duration-1000 delay-500"
+			x-transition:enter-start="opacity-0 scale-0"
+			x-transition:enter-end="opacity-100 scale-100"
+			x-transition:leave="transition ease-in duration-300"
+			x-transition:leave-start="opacity-100 scale-100"
+			x-transition:leave-end="opacity-0 scale-0"
+		>
+			<use href="#doodle-cross"></use>
+		</svg>
+		<div class="flex flex-col lg:flex-row lg:gap-16">
+			<!-- 3. Introduction -->
+			<div
+				class="lg:w-2/3"
+				x-show="showAbout"
+				x-transition:enter="transition ease-out duration-1000"
+				x-transition:enter-start="opacity-0 -translate-x-10 scale-90"
+				x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+				x-transition:leave="transition ease-in duration-300"
+				x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+				x-transition:leave-end="opacity-0 -translate-x-10 scale-90"
+			>
+				<h2
+					class="font-[var(--font-title)] font-extrabold text-5xl text-[var(--color-primary)] mb-6 -rotate-1"
+				>
+					Hello! I'm Lynda.
+				</h2>
+				<div
+					class="space-y-6 font-[var(--font-body)] text-lg text-[var(--color-on-surface-strong)] leading-relaxed"
+				>
+					<p>
+						I thrive on creating order from chaos. For me, organization
+						isn't just about spreadsheets and calendars; it's about creating
+						seamless, friction-free workflows that give you back your most
+						valuable asset:
+						<strong class="font-bold text-[var(--color-primary)]">your time.</strong>
+					</p>
+					<p>
+						With over [X] years of experience supporting high-level
+						executives, I'm not just an assistant—I'm a proactive partner. I
+						anticipate needs before they arise, manage complex logistics
+						with a smile, and treat your business with the same
+						confidentiality and dedication as if it were my own.
+					</p>
+					<p>
+						My goal is simple: to handle the 1,001 details so you can focus
+						100% on the visionary work that only you can do.
+					</p>
+				</div>
+			</div>
+			<!-- 4. Profile Card (Design System) -->
+			<div
+				class="lg:w-1/3 mt-12 lg:mt-0"
+				x-show="showAbout"
+				x-transition:enter="transition ease-out duration-1000 delay-200"
+				x-transition:enter-start="opacity-0 translate-x-10 scale-90"
+				x-transition:enter-end="opacity-100 translate-x-0 scale-100"
+				x-transition:leave="transition ease-in duration-300"
+				x-transition:leave-start="opacity-100 translate-x-0 scale-100"
+				x-transition:leave-end="opacity-0 translate-x-10 scale-90"
+			>
+				<div
+					class="bg-[var(--color-surface)] p-6 md:p-8 rounded-[var(--radius-radius)] shadow-[var(--shadow-md)] sticky top-28"
+				>
+					<!-- Placeholder Image -->
+					<div
+						class="w-full h-64 bg-[var(--color-outline)] rounded-lg flex items-center justify-center mb-6"
+						style="
+                  background-image: url('https://placehold.co/400x400/FBF5FF/7F00FF?text=Lynda&font=nunito');
+                  background-size: cover;
+                  background-position: center;
+                "
+					></div>
+					<h3
+						class="font-[var(--font-title)] font-black text-3xl text-[var(--color-on-surface-strong)]"
+					>
+						Lynda
+					</h3>
+					<p
+						class="font-[var(--font-title)] font-bold text-xl text-[var(--color-primary)] mb-6 rotate-1 inline-block"
+					>
+						Expert Administrative Partner
+					</p>
+					<!-- Social Links (Design System: icon + lowercase handle) -->
+					<div class="space-y-3">
+						<a href="#" class="flex items-center gap-3 group">
+							<svg
+								class="w-6 h-6 text-[var(--color-on-surface)]"
+								fill="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+								></path>
+							</svg>
+							<span
+								class="font-[var(--font-body)] text-[var(--color-on-surface)] group-hover:text-[var(--color-primary)] transition-colors"
+							>linkedin/lynda</span>
+						</a>
+						<a
+							href="mailto:lynda@example.com"
+							class="flex items-center gap-3 group"
+						>
+							<svg
+								class="w-6 h-6 text-[var(--color-on-surface)]"
+								fill="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.713-9.518-7.713h19.036zm-19.518 14v-11.817l9.518 7.713 9.518-7.713v11.817h-19.036z"
+								></path>
+							</svg>
+							<span
+								class="font-[var(--font-body)] text-[var(--color-on-surface)] group-hover:text-[var(--color-primary)] transition-colors"
+							>lynda@example.com</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+}

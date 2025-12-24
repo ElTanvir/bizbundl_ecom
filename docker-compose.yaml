@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    container_name: showcase
+    environment:
+      - APP_ENV=${APP_ENV}
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    ports:
+      - "8112:8080"
+    # networks:
+    #   - dokploy-network
+    # labels:
+    #   - "traefik.http.middlewares.noop-headers.headers.customrequestheaders.X-No-Op=true"
+    #   - "traefik.http.routers.godemo-rest-hy6kue-98-websecure.middlewares=noop-headers@docker"
+
+# networks:
+#   dokploy-network:
+#     external: true

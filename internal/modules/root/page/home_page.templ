@@ -1,0 +1,29 @@
+package homepage
+
+import (
+	// "portfolioed/internal/modules/root/components"
+	"portfolioed/internal/modules/root/components"
+	"portfolioed/ui"
+)
+
+templ HomePage() {
+	@ui.BaseComponent("", "Lynda | Expert Administrative Assistant", true) {
+		// @ui.CurtainAnimation()
+		<main
+			class="max-w-6xl mx-auto px-6 py-16 md:py-24 space-y-24 md:space-y-32 overflow-hidden"
+		>
+			@components.HeroSection()
+			@components.ToolKitSection()
+			@components.AboutSection()
+			@components.CoreServiceSection()
+			@components.WorkflowSection()
+			@components.TestimonialSection()
+			@components.KPISection()
+			@components.WorkProcessSection()
+			@components.ExpertiseSection()
+			@components.FaqSection()
+			@components.BlogSection()
+			@components.CTASection()
+		</main>
+	}
+}

@@ -1,0 +1,58 @@
+package button
+
+import "fmt"
+
+const (
+	buttonBaseClass = "inline-flex items-center justify-center text-sm font-medium " +
+		"transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+)
+
+var buttonVariantClasses = map[string]string{
+	"default":     "bg-primary text-on-primary hover:opacity-90 border border-outline",
+	"destructive": "bg-danger text-on-danger hover:opacity-90 border border-outline",
+	"outline":     "border border-outline bg-surface hover:bg-surface-alt text-on-surface",
+	"secondary":   "bg-secondary text-on-secondary hover:opacity-80 border border-outline",
+	"ghost":       "hover:bg-surface-alt text-on-surface",
+	"link":        "text-primary underline-offset-4 hover:underline",
+}
+
+var buttonSizeClasses = map[string]string{
+	"default": "h-10 px-4 py-2 rounded-[var(--radius-radius)]",
+	"sm":      "h-9 px-3 rounded-[var(--radius-radius)]",
+	"lg":      "h-11 px-8 rounded-[var(--radius-radius)]",
+	"icon":    "h-10 w-10 rounded-[var(--radius-radius)]",
+}
+
+type ButtonProps struct {
+	Variant string
+	Size    string
+	Class   string
+	Extra   templ.Attributes
+}
+
+func buildButtonClass(props *ButtonProps) string {
+	if props == nil {
+		props = &ButtonProps{}
+	}
+	if props.Variant == "" {
+		props.Variant = "default"
+	}
+	if props.Size == "" {
+		props.Size = "default"
+	}
+
+	return fmt.Sprintf("%s %s %s %s",
+		buttonBaseClass,
+		buttonVariantClasses[props.Variant],
+		buttonSizeClasses[props.Size],
+		props.Class)
+}
+
+templ New(props *ButtonProps) {
+	if props == nil {
+		props = &ButtonProps{  }
+	}
+	<button class={ buildButtonClass(props) } { props.Extra... }>
+		{ children... }
+	</button>
+}

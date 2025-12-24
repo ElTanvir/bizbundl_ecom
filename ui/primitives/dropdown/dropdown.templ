@@ -1,0 +1,217 @@
+package dropdown
+
+import "strings"
+
+type Option struct {
+	Value string
+	Label string
+}
+
+type DropdownProps struct {
+	Options      []Option
+	Placeholder  string
+	Label        string
+	Name         string
+	InitialValue string
+	Class        string
+	Extra        templ.Attributes
+}
+
+const (
+	dropdownBaseClass = "w-full max-w-xs flex flex-col gap-1"
+	triggerBaseClass  = "inline-flex w-full items-center justify-between gap-2 whitespace-nowrap " +
+		"bg-[var(--color-surface-alt)] px-4 py-2 text-sm font-medium capitalize tracking-wide " +
+		"text-[var(--color-on-surface)] transition hover:opacity-75 focus-visible:outline-2 " +
+		"focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] rounded-[var(--radius-radius)] " +
+		"border border-[var(--color-outline)]"
+	labelBaseClass = "w-fit pl-0.5 text-sm text-[var(--color-on-surface)]"
+	listBaseClass  = "absolute z-10 left-0 top-11 flex max-h-44 w-full flex-col " +
+		"overflow-hidden overflow-y-auto bg-[var(--color-surface-alt)] p-1 rounded-[var(--radius-radius)] " +
+		"border border-[var(--color-outline)]"
+	optionBaseClass = "combobox-option inline-flex justify-between gap-6 bg-[var(--color-surface-alt)] px-4 py-2 text-sm " +
+		"text-[var(--color-on-surface)] hover:bg-[var(--color-surface)] hover:text-[var(--color-on-surface-strong)] " +
+		"focus-visible:bg-[var(--color-surface)] focus-visible:text-[var(--color-on-surface-strong)] " +
+		"focus-visible:outline-none rounded-[var(--radius-radius)]"
+)
+
+func buildDropdownClass(props *DropdownProps) string {
+	if props == nil {
+		props = &DropdownProps{}
+	}
+
+	var classes []string
+	classes = append(classes, dropdownBaseClass)
+
+	if props.Class != "" {
+		classes = append(classes, props.Class)
+	}
+
+	return strings.Join(classes, " ")
+}
+
+templ New(props *DropdownProps) {
+	if props == nil {
+		props = &DropdownProps{  }
+	}
+	<div
+		x-data={ buildAlpineData(props) }
+		class={ buildDropdownClass(props) }
+		x-on:keydown="highlightFirstMatchingOption($event.key)"
+		x-on:keydown.esc.window="isOpen = false, openedWithKeyboard = false"
+		{ props.Extra... }
+	>
+		if props.Label != "" {
+			<label for={ props.Name } class={ labelBaseClass }>
+				{ props.Label }
+			</label>
+		}
+		<div class="relative">
+			<!-- Trigger Button -->
+			<button
+				type="button"
+				role="combobox"
+				class={ triggerBaseClass }
+				aria-haspopup="listbox"
+				aria-controls={ props.Name + "List" }
+				x-on:click="isOpen = !isOpen"
+				x-on:keydown.down.prevent="openedWithKeyboard = true"
+				x-on:keydown.enter.prevent="openedWithKeyboard = true"
+				x-on:keydown.space.prevent="openedWithKeyboard = true"
+				x-bind:aria-label="selectedOption ? selectedOption.label : placeholder"
+				x-bind:aria-expanded="isOpen || openedWithKeyboard"
+			>
+				<span class="text-sm font-normal" x-text="selectedOption ? selectedOption.label : placeholder"></span>
+				<!-- Chevron -->
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+					<path
+						fill-rule="evenodd"
+						d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+						clip-rule="evenodd"
+					></path>
+				</svg>
+			</button>
+			<!-- Hidden Input -->
+			if props.Name != "" {
+				<input id={ props.Name } name={ props.Name } type="text" x-ref="hiddenTextField" hidden/>
+			}
+			<!-- Options List -->
+			<ul
+				x-cloak
+				x-show="isOpen || openedWithKeyboard"
+				id={ props.Name + "List" }
+				class={ listBaseClass }
+				role="listbox"
+				aria-label={ props.Label + " list" }
+				x-on:click.outside="isOpen = false, openedWithKeyboard = false"
+				x-on:keydown.down.prevent="$focus.wrap().next()"
+				x-on:keydown.up.prevent="$focus.wrap().previous()"
+				x-transition
+				x-trap="openedWithKeyboard"
+			>
+				<template x-for="(item, index) in options" x-bind:key="item.value">
+					<li
+						class={ optionBaseClass }
+						role="option"
+						x-on:click="setSelectedOption(item)"
+						x-on:keydown.enter="setSelectedOption(item)"
+						x-bind:id="'option-' + index"
+						tabindex="0"
+					>
+						<!-- Label -->
+						<span
+							x-bind:class="selectedOption && selectedOption.value === item.value ? 'font-bold' : null"
+							x-text="item.label"
+						></span>
+						<!-- Screen reader indicator -->
+						<span
+							class="sr-only"
+							x-text="selectedOption && selectedOption.value === item.value ? 'selected' : null"
+						></span>
+						<!-- Checkmark -->
+						<svg
+							x-cloak
+							x-show="selectedOption && selectedOption.value === item.value"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							fill="none"
+							stroke-width="2"
+							class="size-4"
+							aria-hidden="true"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
+						</svg>
+					</li>
+				</template>
+			</ul>
+		</div>
+	</div>
+}
+
+func buildAlpineData(props *DropdownProps) string {
+	placeholder := props.Placeholder
+	if placeholder == "" {
+		placeholder = "Please Select"
+	}
+
+	initialValue := ""
+	if props.InitialValue != "" {
+		initialValue = props.InitialValue
+	}
+
+	return `{
+options: ` + buildOptionsJSON(props.Options) + `,
+isOpen: false,
+openedWithKeyboard: false,
+selectedOption: ` + buildInitialOption(props.Options, initialValue) + `,
+placeholder: '` + placeholder + `',
+setSelectedOption(option) {
+this.selectedOption = option;
+this.isOpen = false;
+this.openedWithKeyboard = false;
+if (this.$refs.hiddenTextField) {
+this.$refs.hiddenTextField.value = option.value;
+}
+this.$dispatch('dropdown-change', { option: option });
+},
+highlightFirstMatchingOption(pressedKey) {
+const option = this.options.find((item) =>
+item.label.toLowerCase().startsWith(pressedKey.toLowerCase())
+);
+if (option) {
+const index = this.options.indexOf(option);
+const allOptions = document.querySelectorAll('.combobox-option');
+if (allOptions[index]) {
+allOptions[index].focus();
+}
+}
+}
+}`
+}
+
+func buildOptionsJSON(options []Option) string {
+	if len(options) == 0 {
+		return "[]"
+	}
+
+	var optionsStr []string
+	for _, opt := range options {
+		optionsStr = append(optionsStr, `{value: '`+opt.Value+`', label: '`+opt.Label+`'}`)
+	}
+
+	return "[" + strings.Join(optionsStr, ", ") + "]"
+}
+
+func buildInitialOption(options []Option, initialValue string) string {
+	if initialValue == "" {
+		return "null"
+	}
+
+	for _, opt := range options {
+		if opt.Value == initialValue {
+			return `{value: '` + opt.Value + `', label: '` + opt.Label + `'}`
+		}
+	}
+
+	return "null"
+}

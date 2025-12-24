@@ -1,0 +1,149 @@
+package components
+
+import ()
+
+templ HeroSection() {
+	<section
+		class="relative text-center md:text-left"
+		x-data="{ showHero: false }"
+		x-intersect.once="showHero = true"
+	>
+		<!-- Starburst Badge (Design System) -->
+		<div
+			x-show="showHero"
+			x-transition:enter="transition ease-out duration-1000 delay-500"
+			x-transition:enter-start="opacity-0 scale-50 -rotate-45"
+			x-transition:enter-end="opacity-100 scale-100 -rotate-12"
+			x-transition:leave="transition ease-in duration-300"
+			x-transition:leave-start="opacity-100 scale-100 -rotate-12"
+			x-transition:leave-end="opacity-0 scale-50 -rotate-45"
+			class="absolute -top-10 right-0 md:right-1/4 p-4 bg-[var(--color-secondary)] rounded-full w-36 h-36 flex items-center justify-center text-center font-[var(--font-title)] font-black text-[var(--color-on-secondary)] transform -rotate-12 shadow-lg"
+		>
+			<span>Available for Hire!</span>
+		</div>
+		<!-- Doodles -->
+		<svg
+			class="absolute -top-8 left-0 w-10 h-10 text-[var(--color-warning)] transform rotate-12"
+			x-show="showHero"
+			x-transition:enter="transition ease-out duration-1000 delay-300"
+			x-transition:enter-start="opacity-0 scale-0"
+			x-transition:enter-end="opacity-80 scale-100"
+			x-transition:leave="transition ease-in duration-300"
+			x-transition:leave-start="opacity-80 scale-100"
+			x-transition:leave-end="opacity-0 scale-0"
+		>
+			<use href="#doodle-star"></use>
+			<!-- Continuous subtle pulse between 0.8 and 0.2 (never fully transparent/opaque) -->
+			<animate
+				attributeName="opacity"
+				values="0.8;0.2;0.8"
+				dur="2.5s"
+				repeatCount="indefinite"
+				calcMode="spline"
+				keyTimes="0;0.5;1"
+				keySplines="0.4 0 0.2 1;0.4 0 0.2 1"
+			></animate>
+		</svg>
+		<svg
+			class="absolute -bottom-8 left-1/4 w-12 h-12 text-[var(--color-primary)] opacity-50"
+			x-show="showHero"
+			x-transition:enter="transition ease-out duration-1000 delay-400"
+			x-transition:enter-start="opacity-0 scale-0"
+			x-transition:enter-end="opacity-80 scale-100"
+			x-transition:leave="transition ease-in duration-300"
+			x-transition:leave-start="opacity-80 scale-100"
+			x-transition:leave-end="opacity-0 scale-0"
+		>
+			<use href="#doodle-squiggle"></use>
+			<!-- Continuous subtle pulse between 0.8 and 0.2 (never fully transparent/opaque) -->
+			<animate
+				attributeName="opacity"
+				values="0.8;0.2;0.8"
+				dur="3s"
+				repeatCount="indefinite"
+				calcMode="spline"
+				keyTimes="0;0.5;1"
+				keySplines="0.4 0 0.2 1;0.4 0 0.2 1"
+			></animate>
+		</svg>
+		<!-- Headline (As per Design System: different sizes, rotated) -->
+		<h1
+			class="font-[var(--font-title)] font-black text-[var(--color-primary)]"
+		>
+			<span
+				class="block text-6xl md:text-8xl -rotate-2"
+				x-show="showHero"
+				x-transition:enter="transition ease-out duration-500 delay-100"
+				x-transition:enter-start="opacity-0 scale-95"
+				x-transition:enter-end="opacity-100 scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 scale-100"
+				x-transition:leave-end="opacity-0 scale-95"
+			>I Organize</span>
+			<span
+				class="block text-5xl md:text-7xl text-[var(--color-warning)] ml-10 rotate-1"
+				x-show="showHero"
+				x-transition:enter="transition ease-out duration-500 delay-200"
+				x-transition:enter-start="opacity-0 scale-95"
+				x-transition:enter-end="opacity-100 scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 scale-100"
+				x-transition:leave-end="opacity-0 scale-95"
+			>the Chaos</span>
+			<span
+				class="block text-7xl md:text-9xl -rotate-1 ml-4"
+				x-show="showHero"
+				x-transition:enter="transition ease-out duration-500 delay-300"
+				x-transition:enter-start="opacity-0 scale-95"
+				x-transition:enter-end="opacity-100 scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 scale-100"
+				x-transition:leave-end="opacity-0 scale-95"
+			>so you can</span>
+			<span
+				class="block text-8xl md:text-9xl text-[var(--color-secondary)] -rotate-2 ml-20"
+				x-show="showHero"
+				x-transition:enter="transition ease-out duration-500 delay-400"
+				x-transition:enter-start="opacity-0 scale-95"
+				x-transition:enter-end="opacity-100 scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 scale-100"
+				x-transition:leave-end="opacity-0 scale-95"
+			>focus on</span>
+			<span
+				class="block text-9xl md:text-[10rem] text-[var(--color-primary)] rotate-1 leading-none"
+				x-show="showHero"
+				x-transition:enter="transition ease-out duration-500 delay-500"
+				x-transition:enter-start="opacity-0 scale-95"
+				x-transition:enter-end="opacity-100 scale-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100 scale-100"
+				x-transition:leave-end="opacity-0 scale-95"
+			>the Genius.</span>
+		</h1>
+		<!-- UVP (Unique Value Prop) -->
+		<div
+			x-show="showHero"
+			x-transition:enter="transition ease-out duration-1000 delay-700"
+			x-transition:enter-start="opacity-0 translate-y-10"
+			x-transition:enter-end="opacity-100 translate-y-0"
+			x-transition:leave="transition ease-in duration-300"
+			x-transition:leave-start="opacity-100 translate-y-0"
+			x-transition:leave-end="opacity-0 translate-y-10"
+		>
+			<p
+				class="mt-8 max-w-xl mx-auto md:mx-0 font-[var(--font-body)] text-xl text-[var(--color-on-surface)] leading-relaxed"
+			>
+				Expert administrative and executive support for busy founders,
+				C-suite leaders, and creative agencies.
+			</p>
+			<!-- Primary CTA -->
+			<a
+				href="#contact"
+				class="mt-8 inline-block px-10 py-4 bg-[var(--color-primary)] text-[var(--color-on-primary)] font-[var(--font-title)] font-black text-xl rounded-full hover:bg-opacity-80 transition-all hover:scale-105 transform shadow-lg"
+			>
+				Let's Get Organized
+			</a>
+		</div>
+	</section>
+}

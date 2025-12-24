@@ -1,0 +1,55 @@
+package themeswitcher
+
+import "portfolioed/ui/primitives/dropdown"
+
+type ThemeSwitcherProps struct {
+	Class string
+	Extra templ.Attributes
+}
+
+func getThemeOptions() []dropdown.Option {
+	return []dropdown.Option{
+		{Value: "minimal", Label: "Minimal"},
+		{Value: "arctic", Label: "Arctic"},
+		{Value: "modern", Label: "Modern"},
+		{Value: "high-contrast", Label: "High Contrast"},
+		{Value: "neo-brutalism", Label: "Neo Brutalism"},
+		{Value: "halloween", Label: "Halloween"},
+		{Value: "zombie", Label: "Zombie"},
+		{Value: "pastel", Label: "Pastel"},
+		{Value: "90s", Label: "90s"},
+		{Value: "christmas", Label: "Christmas"},
+		{Value: "prototype", Label: "Prototype"},
+		{Value: "news", Label: "News"},
+		{Value: "industrial", Label: "Industrial"},
+	}
+}
+
+templ New(props *ThemeSwitcherProps) {
+	if props == nil {
+		props = &ThemeSwitcherProps{  }
+	}
+	<div
+		x-data="{
+		init() {
+			const savedTheme = localStorage.getItem('theme') || 'minimal';
+			document.body.setAttribute('data-theme', savedTheme);
+		}
+	}"
+		x-on:dropdown-change="
+		console.log('Theme changed to:', $event.detail.option.value);
+		document.body.setAttribute('data-theme', $event.detail.option.value);
+		localStorage.setItem('theme', $event.detail.option.value);
+	"
+		class={ props.Class }
+		{ props.Extra... }
+	>
+		@dropdown.New(&dropdown.DropdownProps{
+			Options:      getThemeOptions(),
+			Placeholder:  "Minimal",
+			Name:         "theme",
+			InitialValue: "minimal",
+			Class:        "max-w-none w-auto",
+		})
+	</div>
+}

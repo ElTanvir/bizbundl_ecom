@@ -1,0 +1,12 @@
+package menupage
+
+import (
+	"portfolioed/internal/modules/menu/components"
+	"portfolioed/ui"
+)
+
+templ MenuPage() {
+	@ui.BaseComponent("", "MenuPage", true) {
+		@ui.GeneralLayout(components.HeroSection(), components.MenuSection())
+	}
+}

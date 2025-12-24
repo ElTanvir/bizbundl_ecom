@@ -1,0 +1,148 @@
+package ui
+
+import "portfolioed/internal/store"
+
+templ BaseComponent(headContent string, title string, showHeader bool) {
+	{{
+		var criticalCSS = store.GetCssVariable()
+	}}
+	<!DOCTYPE html>
+	<html lang="en" class="dark">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="view-transition" content="same-origin"/>
+			<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link
+				href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Inter:wght@400;500;700&display=swap"
+				rel="stylesheet"
+			/>
+			<!-- Critical CSS loaded synchronously -->
+			@templ.Raw(criticalCSS)
+			// <link href="/static/gen.css" rel="stylesheet"/>
+			<link href="/static/styles.css" rel="stylesheet"/>
+			// <link rel="stylesheet" href="/static/styles.css" media="print" onload="this.media='all'"/>
+			// <noscript><link rel="stylesheet" href="/static/styles.css"/></noscript>
+			<link rel="icon" href="/static/favicon.ico"/>
+			<!--Fonts-->
+			<!-- HTMX Core - loaded immediately -->
+			<script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/htmx-ext-preload@2.1.0"></script>
+			<script>
+				document.addEventListener('htmx:load', function() {
+					htmx.config.globalViewTransitions = true
+				});
+			</script>
+			<!-- Alpine.js ecosystem - deferred -->
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<title>{ title }</title>
+			@templ.Raw(headContent)
+			<!-- Simple performance monitoring -->
+			<style>
+		.htmx-indicator {
+			display: none;
+		}
+
+		.htmx-request .htmx-indicator {
+			display: inline;
+		}
+
+		.htmx-request.htmx-indicator {
+			display: inline;
+		}
+
+		/* Optimize transitions for better perceived performance */
+		.htmx-swapping {
+			opacity: 0;
+		}
+
+		.htmx-settling {
+			opacity: 1;
+			transition: opacity 100ms ease-out;
+		}
+
+		/* Preload hover states */
+		[hx-preload]:hover {
+			cursor: pointer;
+		}
+	</style>
+			<style>
+       @keyframes fade-in {
+         from { opacity: 0; }
+       }
+    
+       @keyframes fade-out {
+         to { opacity: 0; }
+       }
+    
+       @keyframes slide-from-right {
+         from { transform: translateX(400px); }
+       }
+    
+       @keyframes slide-to-left {
+         to { transform: translateX(-400px); }
+       }
+    
+       /* define animations for the old and new content */
+       ::view-transition-old(slide-it) {
+         animation: 180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
+         600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;
+       }
+       ::view-transition-new(slide-it) {
+         animation: 420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
+         600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
+       }
+    
+       /* tie the view transition to a given CSS class */
+       .sample-transition {
+           view-transition-name: slide-it;
+       }
+        
+    </style>
+		</head>
+		<body
+			x-data="{ mobileMenuOpen: false }"
+			hx-ext="preload"
+			class="font-(--font-body) text-on-surface-strong overflow-x-hidden bg-linear-to-br from-surface-alt to-danger"
+		>
+			<svg class="hidden">
+				<defs>
+					<!-- Star Doodle -->
+					<symbol id="doodle-star" viewBox="0 0 24 24">
+						<path
+							fill="currentColor"
+							d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+						></path>
+					</symbol>
+					<!-- Cross/Plus Doodle -->
+					<symbol id="doodle-cross" viewBox="0 0 24 24">
+						<path
+							fill="currentColor"
+							d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+						></path>
+					</symbol>
+					<!-- Squiggle Doodle -->
+					<symbol id="doodle-squiggle" viewBox="0 0 20 20">
+						<path
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M3,10 C3,10 6,3 10,3 C14,3 17,10 17,10 C17,10 14,17 10,17 C6,17 3,10 3,10 Z"
+						></path>
+					</symbol>
+				</defs>
+			</svg>
+			if showHeader {
+				@HeaderComponent()
+			}
+			{ children... }
+			@Footer()
+		</body>
+	</html>
+}

@@ -1,0 +1,18 @@
+package ui
+
+import "fmt"
+
+templ CurtainAnimation() {
+	<div
+		x-show="curtain"
+		x-transition:leave={ fmt.Sprintf("transition ease-in-out %s", AnimationDuration) }
+		x-transition:leave-start="transform"
+		x-transition:leave-end="-translate-y-full"
+		class="fixed top-0 left-0 w-full h-full bg-primary dark:bg-surface-dark z-[100] flex justify-center items-center"
+		x-cloak
+	>
+		<div class="p-10 rounded-full bg-surface dark:bg-surface-dark">
+			<img src="/static/img/logo.png" alt="Style Museum Logo" class="w-24 h-24 animate-pulse"/>
+		</div>
+	</div>
+}
