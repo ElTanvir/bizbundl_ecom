@@ -25,6 +25,6 @@ templfmt:
 templgen:
 	@templ generate
 twc:
-	tailwindcss -i internal/modules/root/css/input.css -o static/styles.css --minify --watch
+	tailwindcss -i internal/views/css/input.css -o static/styles.css --minify --watch
 
 .PHONY: postgres new_migration

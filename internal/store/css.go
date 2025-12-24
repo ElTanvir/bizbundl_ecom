@@ -1,25 +1,5 @@
 package store
 
-import "fmt"
-
-const cssVariableKey = "css:variables"
-
-func SetCssVariable(data string) {
-	s := Get()
-	formattedData := fmt.Sprintf("<style>%s</style>", data)
-	s.Set(cssVariableKey, formattedData)
-}
-
-func GetCssVariable() string {
-	s := Get()
-	v, ok := s.Get(cssVariableKey)
-	if !ok {
-		return ""
-	}
-	u, _ := v.(string)
-	return u
-}
-
 var CriticalCSS = `
 <style>
       :root {
