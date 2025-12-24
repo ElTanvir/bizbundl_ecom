@@ -39,6 +39,7 @@ func Render(c *fiber.Ctx, component templ.Component) error {
 }
 
 func ServeWithETag(c *fiber.Ctx, html []byte, etag string) error {
+	c.Set("Content-Type", "text/html; charset=utf-8")
 	c.Set("ETag", etag)
 	c.Set("Cache-Control", "public, max-age=3600, must-revalidate")
 	c.Set("CDN-Cache-Control", "public, max-age=86400, stale-while-revalidate=604800")
