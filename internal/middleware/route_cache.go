@@ -10,7 +10,7 @@ import (
 
 func RouteCacheMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		if util.IsCacheableRoute(c) {
+		if !util.IsCacheableRoute(c) {
 			return c.Next()
 		}
 		entry, found := store.GetRouteBytes(c.Path())

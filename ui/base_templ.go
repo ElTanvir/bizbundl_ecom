@@ -47,7 +47,7 @@ func BaseComponent(headContent string, title string, showHeader bool) templ.Comp
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `ui/base.templ`, Line: 40, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `ui/base.templ`, Line: 37, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -61,7 +61,7 @@ func BaseComponent(headContent string, title string, showHeader bool) templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<!-- Simple performance monitoring --><style>\n\t\t.htmx-indicator {\n\t\t\tdisplay: none;\n\t\t}\n\n\t\t.htmx-request .htmx-indicator {\n\t\t\tdisplay: inline;\n\t\t}\n\n\t\t.htmx-request.htmx-indicator {\n\t\t\tdisplay: inline;\n\t\t}\n\n\t\t/* Optimize transitions for better perceived performance */\n\t\t.htmx-swapping {\n\t\t\topacity: 0;\n\t\t}\n\n\t\t.htmx-settling {\n\t\t\topacity: 1;\n\t\t\ttransition: opacity 100ms ease-out;\n\t\t}\n\n\t\t/* Preload hover states */\n\t\t[hx-preload]:hover {\n\t\t\tcursor: pointer;\n\t\t}\n\t</style><style>\n       @keyframes fade-in {\n         from { opacity: 0; }\n       }\n    \n       @keyframes fade-out {\n         to { opacity: 0; }\n       }\n    \n       @keyframes slide-from-right {\n         from { transform: translateX(400px); }\n       }\n    \n       @keyframes slide-to-left {\n         to { transform: translateX(-400px); }\n       }\n    \n       /* define animations for the old and new content */\n       ::view-transition-old(slide-it) {\n         animation: 180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,\n         600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;\n       }\n       ::view-transition-new(slide-it) {\n         animation: 420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,\n         600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;\n       }\n    \n       /* tie the view transition to a given CSS class */\n       .sample-transition {\n           view-transition-name: slide-it;\n       }\n        \n    </style></head><body x-data=\"{ mobileMenuOpen: false }\" hx-ext=\"preload\" class=\"font-(--font-body) text-on-surface-strong overflow-x-hidden bg-linear-to-br from-surface-alt to-danger\"><svg class=\"hidden\"><defs><!-- Star Doodle --><symbol id=\"doodle-star\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z\"></path></symbol><!-- Cross/Plus Doodle --><symbol id=\"doodle-cross\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z\"></path></symbol><!-- Squiggle Doodle --><symbol id=\"doodle-squiggle\" viewBox=\"0 0 20 20\"><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M3,10 C3,10 6,3 10,3 C14,3 17,10 17,10 C17,10 14,17 10,17 C6,17 3,10 3,10 Z\"></path></symbol></defs></svg> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</head><body x-data=\"{ mobileMenuOpen: false }\" hx-ext=\"preload\" class=\"font-(--font-body) text-on-surface-strong overflow-x-hidden bg-linear-to-br from-surface-alt to-danger\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
