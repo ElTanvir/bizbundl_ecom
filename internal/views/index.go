@@ -2,6 +2,7 @@ package views
 
 import (
 	"bizbundl/internal/server"
+	"bizbundl/internal/views/admin"
 	"bizbundl/internal/views/frontend"
 )
 
@@ -12,4 +13,5 @@ import (
 // While Maintaining the Same Structure
 func Init(server *server.Server) {
 	frontend.Init(server)
+	admin.Init(server)
 }
