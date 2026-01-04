@@ -1,0 +1,89 @@
+package pages
+
+import (
+	"bizbundl/internal/db/sqlc"
+	"bizbundl/internal/views/frontend/layout"
+	"bizbundl/util"
+)
+
+// Helper struct for display if we join with products,
+// but for now we might only have GetCartItemsRow which has product details if the query joins them.
+// Let's check db.GetCartItemsRow definition.
+// Assuming it has Product Title/Price etc. based on typical join.
+// If not, we might need a composite struct.
+// Let's assume GetCartItemsRow has what we need or we pass a composite.
+templ Cart(cart db.Cart, items []db.GetCartItemsRow) {
+	@layout.BaseComponent(CartHead(), "Your Cart", true) {
+		<div class="container mx-auto px-4 py-8">
+			<h1 class="text-3xl font-bold mb-8">Shopping Cart</h1>
+			if len(items) == 0 {
+				<div class="text-center py-12">
+					<p class="text-xl text-gray-500 mb-4">Your cart is empty.</p>
+					<a href="/" class="text-blue-600 hover:underline">Continue Shopping</a>
+				</div>
+			} else {
+				<div class="flex flex-col md:flex-row gap-8">
+					<!-- Cart Items -->
+					<div class="flex-1 space-y-4">
+						for _, item := range items {
+							@CartItemRow(item)
+						}
+					</div>
+					<!-- Summary -->
+					<div class="w-full md:w-80 bg-gray-50 dark:bg-gray-800 p-6 rounded-lg h-fit">
+						<h2 class="text-xl font-bold mb-4">Summary</h2>
+						<div class="flex justify-between mb-2">
+							<span>Subtotal</span>
+							<span class="font-bold">${ util.FormatPrice(calculateSubtotal(items)) }</span>
+						</div>
+						<button class="w-full bg-blue-600 text-white py-3 rounded mt-6 hover:bg-blue-700 transition">
+							Checkout
+						</button>
+					</div>
+				</div>
+			}
+		</div>
+	}
+}
+
+templ CartItemRow(item db.GetCartItemsRow) {
+	<div class="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm" id={ "cart-item-" + util.UUIDToString(item.ID) }>
+		// Image Placeholder
+		<div class="w-20 h-20 bg-gray-200 rounded shrink-0"></div>
+		<div class="flex-1">
+			<h3 class="font-semibold text-lg">{ item.ProductTitle }</h3>
+			<p class="text-gray-500 text-sm">Variant: Default</p>
+			<p class="text-blue-600 font-bold mt-1">${ util.FormatPrice(item.BasePrice) }</p>
+		</div>
+		<div class="flex items-center gap-3">
+			<form hx-post="/cart/update" hx-target={ "#cart-item-" + util.UUIDToString(item.ID) } hx-swap="outerHTML">
+				<input type="hidden" name="item_id" value={ util.UUIDToString(item.ID) }/>
+				// Only simplified quantity control for now
+				<input
+					type="number"
+					name="quantity"
+					value={ util.Int32ToString(item.Quantity) }
+					class="w-16 border rounded p-1 text-center bg-transparent"
+					hx-trigger="change delay:500ms"
+					hx-post="/cart/update"
+					hx-include="closest div"
+				/>
+			</form>
+			<button
+				class="text-red-500 hover:text-red-700"
+				hx-delete={ "/cart/items/" + util.UUIDToString(item.ID) }
+				hx-target={ "#cart-item-" + util.UUIDToString(item.ID) }
+				hx-swap="remove"
+			>
+				X
+			</button>
+		</div>
+	</div>
+}
+
+templ CartHead() {
+	<meta name="robots" content="noindex"/>
+}
+
+// Helpers need to be in .go file or func block, but for simplicity assuming we create util helpers.
+// calculateSubtotal needs to be a go function available here. I can write it in `cart_helpers.go` in same package.

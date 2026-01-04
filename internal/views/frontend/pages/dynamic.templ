@@ -1,0 +1,78 @@
+package pages
+
+import (
+	pb "bizbundl/internal/modules/page_builder/service"
+	"bizbundl/internal/views/components/library"
+	"bizbundl/internal/views/frontend/layout"
+	// "bizbundl/util"
+	db "bizbundl/internal/db/sqlc"
+)
+
+templ DynamicPage(page *pb.PageConfig) {
+	@layout.BaseComponent(DynamicHead(page), page.Title, true) {
+		for _, section := range page.Sections {
+			switch section.Type {
+				case "hero":
+					@library.Hero(mapHeroProps(section.Props))
+				case "product_grid":
+					@library.ProductGrid(mapProductGridProps(section.Props))
+				case "rich_text":
+					@library.RichText(mapRichTextProps(section.Props))
+				default:
+					// Debugger
+					<div class="bg-red-100 text-red-500 p-4">Unknown Component: { section.Type }</div>
+			}
+		}
+	}
+}
+
+templ DynamicHead(page *pb.PageConfig) {
+	<meta name="title" content={ page.Title }/>
+}
+
+// Mppers (Should be in .go file or inline here if simple)
+
+func mapHeroProps(props map[string]interface{}) library.HeroProps {
+	return library.HeroProps{
+		Title:           getString(props, "Title"),
+		Subtitle:        getString(props, "Subtitle"),
+		ButtonText:      getString(props, "ButtonText"),
+		ButtonLink:      getString(props, "ButtonLink"),
+		BackgroundImage: getString(props, "BackgroundImage"),
+		Align:           getString(props, "Align"),
+	}
+}
+
+func mapProductGridProps(props map[string]interface{}) library.ProductGridProps {
+	p := library.ProductGridProps{
+		Title:       getString(props, "Title"),
+		ViewAllLink: getString(props, "ViewAllLink"),
+	}
+
+	// Extract Products
+	if products, ok := props["Products"].([]db.Product); ok {
+		p.Products = products
+	}
+	return p
+}
+
+func mapRichTextProps(props map[string]interface{}) library.RichTextProps {
+	return library.RichTextProps{
+		Content:   getString(props, "Content"),
+		Container: getBool(props, "Container"),
+	}
+}
+
+func getString(m map[string]interface{}, key string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+	return ""
+}
+
+func getBool(m map[string]interface{}, key string) bool {
+	if v, ok := m[key].(bool); ok {
+		return v
+	}
+	return false
+}

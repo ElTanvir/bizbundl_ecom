@@ -1,0 +1,18 @@
+package library
+
+type RichTextProps struct {
+	Content   string // HTML content
+	Container bool
+}
+
+templ RichText(props RichTextProps) {
+	if props.Container {
+		<div class="container mx-auto px-6 py-12 prose dark:prose-invert max-w-4xl">
+			@templ.Raw(props.Content)
+		</div>
+	} else {
+		<div class="prose dark:prose-invert max-w-none">
+			@templ.Raw(props.Content)
+		</div>
+	}
+}

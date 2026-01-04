@@ -16,6 +16,7 @@ type Querier interface {
 	CreateCart(ctx context.Context, arg CreateCartParams) (Cart, error)
 	// Categories
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
+	CreatePage(ctx context.Context, arg CreatePageParams) (Page, error)
 	CreatePaymentGateway(ctx context.Context, arg CreatePaymentGatewayParams) (PaymentGateway, error)
 	// Products
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
@@ -36,6 +37,7 @@ type Querier interface {
 	GetCartByUser(ctx context.Context, userID pgtype.UUID) (Cart, error)
 	GetCartItems(ctx context.Context, cartID pgtype.UUID) ([]GetCartItemsRow, error)
 	GetCategory(ctx context.Context, id pgtype.UUID) (Category, error)
+	GetPageByRoute(ctx context.Context, route string) (Page, error)
 	GetPaymentGateway(ctx context.Context, id string) (PaymentGateway, error)
 	GetProduct(ctx context.Context, id pgtype.UUID) (Product, error)
 	GetProductBySlug(ctx context.Context, slug string) (Product, error)
@@ -45,6 +47,7 @@ type Querier interface {
 	GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserByPhone(ctx context.Context, phone *string) (User, error)
 	ListCategories(ctx context.Context) ([]Category, error)
+	ListPages(ctx context.Context) ([]Page, error)
 	ListPaymentGateways(ctx context.Context) ([]PaymentGateway, error)
 	ListProducts(ctx context.Context) ([]Product, error)
 	ListStoreConfigs(ctx context.Context) ([]StoreConfig, error)
@@ -53,6 +56,7 @@ type Querier interface {
 	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) (CartItem, error)
 	UpdateCartUser(ctx context.Context, arg UpdateCartUserParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
+	UpdatePage(ctx context.Context, arg UpdatePageParams) (Page, error)
 	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 	UpdatePaymentGateway(ctx context.Context, arg UpdatePaymentGatewayParams) (PaymentGateway, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)

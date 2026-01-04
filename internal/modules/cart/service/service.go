@@ -73,6 +73,14 @@ func (s *CartService) RemoveItem(ctx context.Context, itemID pgtype.UUID, cartID
 	})
 }
 
+func (s *CartService) UpdateItemQuantity(ctx context.Context, itemID pgtype.UUID, cartID pgtype.UUID, quantity int32) (db.CartItem, error) {
+	return s.store.UpdateCartItemQuantity(ctx, db.UpdateCartItemQuantityParams{
+		ID:       itemID,
+		CartID:   cartID,
+		Quantity: quantity,
+	})
+}
+
 func (s *CartService) MergeCarts(ctx context.Context, sessionID pgtype.UUID, userID pgtype.UUID) error {
 	// 1. Get Guest Cart (Session)
 	guestCart, err := s.store.GetCartBySession(ctx, sessionID)

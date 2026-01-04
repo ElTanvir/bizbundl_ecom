@@ -1,0 +1,53 @@
+package library
+
+import (
+	"bizbundl/internal/db/sqlc"
+	"bizbundl/util"
+)
+
+type ProductGridProps struct {
+	Title       string
+	Products    []db.Product
+	ViewAllLink string
+}
+
+templ ProductGrid(props ProductGridProps) {
+	<section class="py-16 bg-gray-50 dark:bg-gray-900">
+		<div class="container mx-auto px-6">
+			<div class="flex justify-between items-end mb-8">
+				<h2 class="text-3xl font-bold">{ props.Title }</h2>
+				if props.ViewAllLink != "" {
+					<a href={ templ.SafeURL(props.ViewAllLink) } class="text-blue-600 hover:underline font-semibold">View All</a>
+				}
+			</div>
+			if len(props.Products) == 0 {
+				<p class="text-gray-500">No products to display.</p>
+			} else {
+				<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+					for _, p := range props.Products {
+						// Reusing item card logic. 
+						// Ideally we extract "ProductCard" to internal/views/components/ui/product_card.templ
+						// For now, I'll inline or duplicate, but "Super Modular" suggests extraction.
+						// I will create ui/product_card.templ next and reuse it.
+						@ProductCard(p)
+					}
+				</div>
+			}
+		</div>
+	</section>
+}
+
+// Temporary inline, will move to UI library
+templ ProductCard(p db.Product) {
+	// Copy logic from home.templ but make it reusable
+	<div class="border rounded-lg p-4 shadow-sm hover:shadow-md transition bg-white dark:bg-gray-800">
+		<div class="h-48 bg-gray-200 rounded mb-4 flex items-center justify-center">
+			<span class="text-gray-400">Image</span>
+		</div>
+		<h3 class="text-lg font-semibold mb-2 truncate"><a href={ templ.SafeURL("/product/" + p.Slug) }>{ p.Title }</a></h3>
+		<div class="flex justify-between items-center mt-4">
+			<span class="text-lg font-bold">${ util.FormatPrice(p.BasePrice) }</span>
+			<button class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Add</button>
+		</div>
+	</div>
+}
