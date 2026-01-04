@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"time"
 
 	db "bizbundl/internal/db/sqlc"
+	"bizbundl/token"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,11 +19,12 @@ var (
 )
 
 type AuthService struct {
-	store db.DBStore
+	store      db.DBStore
+	tokenMaker token.Maker
 }
 
-func NewAuthService(store db.DBStore) *AuthService {
-	return &AuthService{store: store}
+func NewAuthService(store db.DBStore, tokenMaker token.Maker) *AuthService {
+	return &AuthService{store: store, tokenMaker: tokenMaker}
 }
 
 // hashPassword generates a bcrypt hash of the password
@@ -76,20 +77,31 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 		return "", db.User{}, ErrInvalidCredentials
 	}
 
-	// Create Session
-	token := uuid.New().String()
-	expiresAt := time.Now().Add(24 * 7 * time.Hour) // 7 Days
-
-	_, err = s.store.CreateSession(ctx, db.CreateSessionParams{
-		Token:     token,
-		UserID:    user.ID,
-		ExpiresAt: pgtype.Timestamptz{Time: expiresAt, Valid: true},
-	})
+	// Create Stateless Token (Paseto)
+	// Use defined constant for User Session
+	duration := UserSessionDuration
+	token, _, err := s.tokenMaker.CreateToken(user.ID.String(), string(user.Role), duration)
 	if err != nil {
 		return "", db.User{}, err
 	}
 
+	// We can also creating a DB session for Revocation List (optional but safer)
+	// For "Super Efficiency" requested by user, we might skip or do async.
+	// The previous implementation did DB.
+	// Note: If we use Paseto self-contained, we don't NEED the db session ID in the token necessarily,
+	// unless we want to revoke it by ID.
+	// Let's just return the Paseto.
+
 	return token, user, nil
+}
+
+// GetUser retrieves a user by ID
+func (s *AuthService) GetUser(ctx context.Context, id pgtype.UUID) (db.User, error) {
+	user, err := s.store.GetUserById(ctx, id)
+	if err != nil {
+		return db.User{}, err
+	}
+	return user, nil
 }
 
 // VerifySession checks if value exists and is valid
@@ -122,9 +134,4 @@ func (s *AuthService) VerifySession(ctx context.Context, token string) (db.User,
 	}
 
 	return user, nil
-}
-
-// Logout deletes the session
-func (s *AuthService) Logout(ctx context.Context, token string) error {
-	return s.store.DeleteSession(ctx, token)
 }

@@ -16,16 +16,18 @@ var (
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
 	UserID    string    `json:"user_id"`
+	Role      string    `json:"role"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
 // NewPayload creates a new token payload with a specific username and duration
-func NewPayload(user_id string, duration time.Duration) (*Payload, error) {
+func NewPayload(user_id string, role string, duration time.Duration) (*Payload, error) {
 	tokenID := uuid.New()
 	payload := &Payload{
 		ID:        tokenID,
 		UserID:    user_id,
+		Role:      role,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}
