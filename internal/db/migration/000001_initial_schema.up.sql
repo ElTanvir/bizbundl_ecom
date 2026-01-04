@@ -32,7 +32,6 @@ CREATE TYPE "user_role" AS ENUM ('user', 'moderator', 'admin');
 -- This table stores user account information.
 CREATE TABLE "users" (
     "id"            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    "username"      VARCHAR(255) UNIQUE,
     "hashed_password" VARCHAR(255) NOT NULL,
     "first_name"    VARCHAR(100),
     "last_name"     VARCHAR(100),
@@ -61,7 +60,6 @@ CREATE INDEX ON "users" ("created_at");
 CREATE INDEX ON "users" ("deleted_at") WHERE "deleted_at" IS NULL;
 
 -- GIN indexes for efficient text search using pg_trgm
-CREATE INDEX ON "users" USING GIN ("username" gin_trgm_ops);
 CREATE INDEX ON "users" USING GIN ("email" gin_trgm_ops);
 CREATE INDEX ON "users" USING GIN ("full_name" gin_trgm_ops);
 

@@ -101,13 +101,6 @@ func (server *Server) setupStatics() {
 		Browse:        false,
 		CacheDuration: 365 * 24 * time.Hour,
 	})
-	server.router.Static("/demo", "./inspirations", fiber.Static{
-		MaxAge:        oneYearInSeconds,
-		Compress:      true,
-		ByteRange:     true,
-		Browse:        false,
-		CacheDuration: 365 * 24 * time.Hour,
-	})
 
 	// Serve uploaded files publicly
 	server.router.Static("/uploads", "./uploads", fiber.Static{

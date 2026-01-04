@@ -3,7 +3,7 @@ module bizbundl
 go 1.24.0
 
 require (
-	github.com/a-h/templ v0.3.924
+	github.com/a-h/templ v0.3.977
 	github.com/aead/chacha20poly1305 v0.0.0-20201124145622-1a5aba2a8b29
 	github.com/cloudflare/cloudflare-go/v6 v6.1.0
 	github.com/go-playground/validator/v10 v10.26.0
