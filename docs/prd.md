@@ -25,11 +25,11 @@ A high-performance, single-tenant e-commerce solution designed for speed and sim
 ### B. Admin Panel (Merchant View)
 1.  **Catalog Management:**
     *   Products: Title, Price, Description, **File Upload (for delivery)**.
-    *   **Future (Physical):** Robust variation system (e.g., Mac Mini: RAM + SSD combinations = Unique Price/Stock).
-2.  **Payments:**
-    *   **Gateways:** SSLCommerz, AmarPay, UddoktaPay.
-    *   Merchant selects active gateway via config.
-    *   **Couriers:** Integration with Pathao/RedX.
+    *   **Future (Physical):** Robust variation system options.
+2.  **Payments (MVP Scope):**
+    *   **Provider:** UddoktaPay (Sole provider for MVP).
+    *   Merchant Config: API Key & URL in `payment_gateways`.
+    *   **Couriers:** Integration with Pathao/RedX (Future/Infrastructure Ready).
     *   **RBAC:** Staff accounts with granular permissions (e.g., "See Orders" but not "Settings").
 3.  **Order Management:**
     *   Status: Paid -> Completed (Auto).
