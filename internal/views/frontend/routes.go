@@ -18,6 +18,7 @@ var Routes = []ViewRoute{
 		Path:   "/",
 		Method: "GET",
 		Handler: func(c *fiber.Ctx) error {
+			c.Set("Cache-Control", "public, max-age=60")
 			return util.Render(c, homepage.HomePage())
 		},
 	},

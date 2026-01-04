@@ -3,13 +3,14 @@ package server
 import (
 	"bizbundl/internal/config"
 	db "bizbundl/internal/db/sqlc"
-	"bizbundl/internal/middleware"
 	"bizbundl/token"
 	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
@@ -29,7 +30,11 @@ func NewServer(config *config.Config, store db.DBStore) (*Server, error) {
 	}
 
 	app := fiber.New(fiber.Config{})
-	app.Use(middleware.RouteCacheMiddleware())
+	app.Use(etag.New())
+	app.Use(cache.New(cache.Config{
+		Expiration:   1 * time.Minute,
+		CacheControl: true,
+	}))
 	app.Use(recover.New())
 	if config.Environment != "development" {
 		app.Use(compress.New(compress.Config{
