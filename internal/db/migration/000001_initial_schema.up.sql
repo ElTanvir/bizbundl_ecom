@@ -123,6 +123,8 @@ CREATE TABLE cart_items (
     quantity INT NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+-- Ensure unique items per cart (treating NULL variant_id as '0000...' for uniqueness)
+CREATE UNIQUE INDEX idx_cart_items_unique ON cart_items (cart_id, product_id, COALESCE(variant_id, '00000000-0000-0000-0000-000000000000'));
 
 -- 6. Orders
 CREATE TABLE orders (

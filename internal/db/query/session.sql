@@ -1,11 +1,10 @@
 -- name: CreateSession :one
 INSERT INTO sessions (
-    id,
     token,
     user_id,
     expires_at
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3
 ) RETURNING *;
 
 -- name: GetSession :one

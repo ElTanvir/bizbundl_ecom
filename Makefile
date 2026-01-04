@@ -10,10 +10,6 @@ cdb:
 	@docker exec -it pgdb createdb --username=$(DB_USER) --owner=$(DB_USER) $(DB_NAME)
 ddb:
 	@docker exec -it pgdb dropdb --username=$(DB_USER) $(DB_NAME)
-mgup:
-	migrate -path internal/db/migration -database "$(DB_URL)" -verbose up
-mgdown:
-	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down
 sqlc:
 	docker run --rm -v "${CURDIR}:/src" -w /src sqlc/sqlc generate
 serverDropDBCommand:

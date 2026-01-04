@@ -11,25 +11,51 @@ import (
 )
 
 type Querier interface {
+	AddCartItem(ctx context.Context, arg AddCartItemParams) (CartItem, error)
+	ClearCart(ctx context.Context, cartID pgtype.UUID) error
+	CreateCart(ctx context.Context, arg CreateCartParams) (Cart, error)
+	// Categories
+	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreatePaymentGateway(ctx context.Context, arg CreatePaymentGatewayParams) (PaymentGateway, error)
+	// Products
+	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	// Variants
+	CreateProductVariant(ctx context.Context, arg CreateProductVariantParams) (ProductVariant, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateStoreConfig(ctx context.Context, arg CreateStoreConfigParams) (StoreConfig, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteCategory(ctx context.Context, id pgtype.UUID) error
 	DeleteExpiredSessions(ctx context.Context) error
 	DeletePaymentGateway(ctx context.Context, id string) error
+	DeleteProduct(ctx context.Context, id pgtype.UUID) error
 	DeleteSession(ctx context.Context, token string) error
 	DeleteStoreConfig(ctx context.Context, key string) error
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
+	DeleteVariant(ctx context.Context, id pgtype.UUID) error
+	GetCartBySession(ctx context.Context, sessionID pgtype.UUID) (Cart, error)
+	GetCartByUser(ctx context.Context, userID pgtype.UUID) (Cart, error)
+	GetCartItems(ctx context.Context, cartID pgtype.UUID) ([]GetCartItemsRow, error)
+	GetCategory(ctx context.Context, id pgtype.UUID) (Category, error)
 	GetPaymentGateway(ctx context.Context, id string) (PaymentGateway, error)
+	GetProduct(ctx context.Context, id pgtype.UUID) (Product, error)
+	GetProductBySlug(ctx context.Context, slug string) (Product, error)
 	GetSession(ctx context.Context, token string) (Session, error)
 	GetStoreConfig(ctx context.Context, key string) (StoreConfig, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserByPhone(ctx context.Context, phone *string) (User, error)
+	ListCategories(ctx context.Context) ([]Category, error)
 	ListPaymentGateways(ctx context.Context) ([]PaymentGateway, error)
+	ListProducts(ctx context.Context) ([]Product, error)
 	ListStoreConfigs(ctx context.Context) ([]StoreConfig, error)
+	ListVariantsByProduct(ctx context.Context, productID pgtype.UUID) ([]ProductVariant, error)
+	RemoveCartItem(ctx context.Context, arg RemoveCartItemParams) error
+	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) (CartItem, error)
+	UpdateCartUser(ctx context.Context, arg UpdateCartUserParams) error
+	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 	UpdatePaymentGateway(ctx context.Context, arg UpdatePaymentGatewayParams) (PaymentGateway, error)
+	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateStoreConfig(ctx context.Context, arg UpdateStoreConfigParams) (StoreConfig, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
