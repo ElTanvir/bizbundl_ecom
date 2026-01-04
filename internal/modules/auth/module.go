@@ -5,13 +5,16 @@ import (
 	"bizbundl/internal/middleware"
 	"bizbundl/internal/modules/auth/handler"
 	"bizbundl/internal/modules/auth/service"
+	cartservice "bizbundl/internal/modules/cart/service"
 	"bizbundl/internal/server"
 )
 
 // Init initializes the Auth module: wires the Service/Handler and registers routes.
 func Init(app *server.Server) {
 	svc := NewAuthService(app)
-	h := handler.NewAuthHandler(svc)
+	// Initialize CartService for linking (Ideally, this should be a singleton in app, but new instance is fine)
+	cartSvc := cartservice.NewCartService(app.GetDB())
+	h := handler.NewAuthHandler(svc, cartSvc)
 
 	// Auth Middleware (Global)
 	// We pass the token maker directly to middleware

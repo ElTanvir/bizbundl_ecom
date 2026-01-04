@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 // Auth Middleware (Super Efficient / Stateless)
@@ -22,22 +23,50 @@ func Auth(tokenMaker token.Maker, userDuration, guestDuration, refreshThreshold 
 			}
 		}
 
-		if tokenString == "" {
-			return util.APIError(c, fiber.StatusUnauthorized, fiber.NewError(fiber.StatusUnauthorized, "Missing authentication token"))
+		var payload *token.Payload
+		var err error
+
+		// 2. Verify Token (if exists)
+		if tokenString != "" {
+			payload, err = tokenMaker.VerifyToken(tokenString)
 		}
 
-		// 2. Verify Token (CPU only, No DB)
-		payload, err := tokenMaker.VerifyToken(tokenString)
-		if err != nil {
-			c.ClearCookie("session_token")
-			return util.APIError(c, fiber.StatusUnauthorized, fiber.NewError(fiber.StatusUnauthorized, "Invalid or expired token"))
+		// 3. Create Guest Identity if missing or invalid
+		// Note: We might want to separate "Strict Auth" (401) vs "Guest Identity" (Auto-create)
+		// For E-commerce, we usually want Guest Identity everywhere by default.
+		if tokenString == "" || err != nil {
+			// If verification failed, clear bad cookie
+			if err != nil {
+				c.ClearCookie("session_token")
+			}
+
+			// Generate NEW Guest Identity
+			guestID := uuid.New() // Using uuid direct
+			// Actually payload needs UUID string
+			newToken, newPayload, err := tokenMaker.CreateToken(guestID.String(), "guest", guestDuration)
+			if err != nil {
+				return util.APIError(c, fiber.StatusInternalServerError, fiber.NewError(fiber.StatusInternalServerError, "Failed to create guest session"))
+			}
+
+			// Set Cookie
+			cookie := new(fiber.Cookie)
+			cookie.Name = "session_token"
+			cookie.Value = newToken
+			cookie.Expires = time.Now().Add(guestDuration) // Guest duration
+			cookie.HTTPOnly = true
+			cookie.Secure = true
+			cookie.SameSite = "Strict"
+			c.Cookie(cookie)
+
+			tokenString = newToken
+			payload = newPayload
 		}
 
-		// 3. Set Context
+		// 4. Set Context
 		c.Locals("user_id", payload.UserID)
 		c.Locals("user_role", payload.Role)
 
-		// Auto-Renewal (Sliding Window)
+		// Auto-Renewal (Sliding Window) for Valid Tokens
 		if time.Since(payload.IssuedAt) > refreshThreshold {
 			// Generate NEW token
 			duration := userDuration

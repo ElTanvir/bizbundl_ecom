@@ -3,6 +3,7 @@ package handler
 import (
 	db "bizbundl/internal/db/sqlc"
 	"bizbundl/internal/modules/auth/service"
+	cartservice "bizbundl/internal/modules/cart/service"
 	"bizbundl/util"
 	"time"
 
@@ -11,11 +12,12 @@ import (
 )
 
 type AuthHandler struct {
-	service *service.AuthService
+	service     *service.AuthService
+	cartService *cartservice.CartService
 }
 
-func NewAuthHandler(service *service.AuthService) *AuthHandler {
-	return &AuthHandler{service: service}
+func NewAuthHandler(service *service.AuthService, cartService *cartservice.CartService) *AuthHandler {
+	return &AuthHandler{service: service, cartService: cartService}
 }
 
 func newUserResponse(user db.User) UserResponse {
@@ -74,6 +76,22 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	token, user, err := h.service.Login(c.Context(), req.Email, req.Password)
 	if err != nil {
 		return util.APIError(c, fiber.StatusUnauthorized, err)
+	}
+
+	// Merge Guest Cart if exists
+	// Middleware ensures "user_id" and "user_role" are set.
+	// If the current role is 'guest', we use that ID to merge.
+	currentRole, _ := c.Locals("user_role").(string)
+	if currentRole == "guest" {
+		guestIDStr, ok := c.Locals("user_id").(string)
+		if ok && guestIDStr != "" {
+			var guestUUID pgtype.UUID
+			if err := guestUUID.Scan(guestIDStr); err == nil {
+				// Perform Merge (Async or Sync? Sync is safer for immediate cart view)
+				// Ignoring error for now (or log it), shouldn't block login
+				_ = h.cartService.MergeCarts(c.Context(), guestUUID, user.ID)
+			}
+		}
 	}
 
 	h.setSessionCookie(c, token)
