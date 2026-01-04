@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bizbundl/internal/constants"
 	"bizbundl/internal/middleware"
 	"bizbundl/internal/modules/auth/handler"
 	"bizbundl/internal/modules/auth/service"
@@ -14,7 +15,13 @@ func Init(app *server.Server) {
 
 	// Auth Middleware (Global)
 	// We pass the token maker directly to middleware
-	authMiddleware := middleware.Auth(app.GetTokenMaker())
+	// We also pass session durations configuration
+	authMiddleware := middleware.Auth(
+		app.GetTokenMaker(),
+		constants.UserSessionDuration,
+		constants.GuestSessionDuration,
+		constants.RefreshThreshold,
+	)
 
 	// Routes
 	api := app.GetRouter().Group("/api/v1/auth")

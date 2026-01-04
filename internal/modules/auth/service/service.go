@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"bizbundl/internal/constants"
 	db "bizbundl/internal/db/sqlc"
 	"bizbundl/token"
 
@@ -79,7 +80,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 
 	// Create Stateless Token (Paseto)
 	// Use defined constant for User Session
-	duration := UserSessionDuration
+	duration := constants.UserSessionDuration
 	token, _, err := s.tokenMaker.CreateToken(user.ID.String(), string(user.Role), duration)
 	if err != nil {
 		return "", db.User{}, err

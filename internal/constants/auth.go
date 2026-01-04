@@ -1,12 +1,11 @@
-package service
+package constants
 
 import "time"
 
 const (
 	// UserSessionDuration is the core validity of a logged-in user token.
-	// User asked for "Short". Let's do 2 Hours.
-	// With auto-renewal, this means 2 hours of *inactivity* logs you out.
-	UserSessionDuration = 2 * time.Hour
+	// 7 Days is standard. Auto-renewal keeps it "forever" for active users.
+	UserSessionDuration = 7 * 24 * time.Hour
 
 	// GuestSessionDuration is 2 years to persist carts.
 	GuestSessionDuration = 2 * 365 * 24 * time.Hour

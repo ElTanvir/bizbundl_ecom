@@ -5,3 +5,4 @@ uploads/
 *.fiber.gz
 .env
 next.txt
+/tmp_server
