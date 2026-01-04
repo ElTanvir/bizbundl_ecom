@@ -12,6 +12,7 @@ import (
 
 	"bizbundl/internal/config"
 	db "bizbundl/internal/db/sqlc"
+	"bizbundl/internal/server"
 	"bizbundl/util"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,10 +20,34 @@ import (
 
 var testStore db.DBStore
 var testPool *pgxpool.Pool
+var testServer *server.Server
+
+func SetupTestServer() *server.Server {
+	if testServer != nil {
+		return testServer
+	}
+
+	// Reuse DB Setup Logic or embed it
+	store, cfg := setupDBAndConfig()
+
+	srv, err := server.NewServer(cfg, store)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
+	testServer = srv
+	return testServer
+}
 
 func SetupTestDB() db.DBStore {
+	if testServer != nil {
+		return testServer.GetDB()
+	}
+	return SetupTestServer().GetDB()
+}
+
+func setupDBAndConfig() (db.DBStore, *config.Config) {
 	if testStore != nil {
-		return testStore
+		return testStore, config.Load()
 	}
 
 	// Find Project Root
@@ -46,7 +71,7 @@ func SetupTestDB() db.DBStore {
 	testPool = connPool
 
 	testStore = db.NewStore(connPool)
-	return testStore
+	return testStore, cfg
 }
 
 // CleanupTables truncates tables to ensure clean state between tests

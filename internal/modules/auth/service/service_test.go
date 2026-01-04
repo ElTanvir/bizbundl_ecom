@@ -6,7 +6,6 @@ import (
 
 	"bizbundl/internal/modules/auth/service"
 	"bizbundl/internal/testutil"
-	"bizbundl/token"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -15,9 +14,8 @@ func TestRegister(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	tokenMaker, _ := token.NewPasetoMaker(testutil.RandomString(32))
-	svc := service.NewAuthService(store, tokenMaker)
+	srv := testutil.SetupTestServer()
+	svc := service.NewAuthService(srv.GetDB(), srv.GetTokenMaker())
 	ctx := context.Background()
 
 	email := testutil.RandomEmail()
@@ -37,9 +35,8 @@ func TestLogin(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	tokenMaker, _ := token.NewPasetoMaker(testutil.RandomString(32))
-	svc := service.NewAuthService(store, tokenMaker)
+	srv := testutil.SetupTestServer()
+	svc := service.NewAuthService(srv.GetDB(), srv.GetTokenMaker())
 	ctx := context.Background()
 
 	email := testutil.RandomEmail()

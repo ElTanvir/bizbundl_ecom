@@ -1,6 +1,7 @@
-package catalog
+package handler
 
 import (
+	"bizbundl/internal/modules/catalog/service"
 	"bizbundl/util"
 	"fmt"
 
@@ -9,10 +10,10 @@ import (
 )
 
 type CatalogHandler struct {
-	service *CatalogService
+	service *service.CatalogService
 }
 
-func NewCatalogHandler(service *CatalogService) *CatalogHandler {
+func NewCatalogHandler(service *service.CatalogService) *CatalogHandler {
 	return &CatalogHandler{service: service}
 }
 

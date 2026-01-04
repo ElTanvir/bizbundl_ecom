@@ -1,6 +1,7 @@
-package cart
+package handler
 
 import (
+	"bizbundl/internal/modules/cart/service"
 	"bizbundl/util"
 	"fmt"
 
@@ -10,10 +11,10 @@ import (
 )
 
 type CartHandler struct {
-	service *CartService
+	service *service.CartService
 }
 
-func NewCartHandler(service *CartService) *CartHandler {
+func NewCartHandler(service *service.CartService) *CartHandler {
 	return &CartHandler{service: service}
 }
 

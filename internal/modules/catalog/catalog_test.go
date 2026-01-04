@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"bizbundl/internal/modules/catalog"
+	"bizbundl/internal/modules/catalog/service"
 	"bizbundl/internal/testutil"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -16,8 +16,9 @@ func TestCreateCategory(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	svc := catalog.NewCatalogService(store)
+	srv := testutil.SetupTestServer()
+	store := srv.GetDB()
+	svc := service.NewCatalogService(store)
 	ctx := context.Background()
 
 	cat, err := svc.CreateCategory(ctx, "Electronics", pgtype.UUID{})
@@ -31,15 +32,16 @@ func TestCreateProduct(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	svc := catalog.NewCatalogService(store)
+	srv := testutil.SetupTestServer()
+	store := srv.GetDB()
+	svc := service.NewCatalogService(store)
 	ctx := context.Background()
 
 	// Dependency: Category
 	cat, err := svc.CreateCategory(ctx, "Laptops", pgtype.UUID{})
 	assert.NoError(t, err)
 
-	p, err := svc.CreateProduct(ctx, catalog.CreateProductParams{
+	p, err := svc.CreateProduct(ctx, service.CreateProductParams{
 		Title:      "MacBook Pro M4",
 		BasePrice:  1999.00,
 		IsDigital:  false,
@@ -55,12 +57,13 @@ func TestGetProduct(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	svc := catalog.NewCatalogService(store)
+	srv := testutil.SetupTestServer()
+	store := srv.GetDB()
+	svc := service.NewCatalogService(store)
 	ctx := context.Background()
 
 	cat, _ := svc.CreateCategory(ctx, "Phones", pgtype.UUID{})
-	pCreated, _ := svc.CreateProduct(ctx, catalog.CreateProductParams{
+	pCreated, _ := svc.CreateProduct(ctx, service.CreateProductParams{
 		Title:      "iPhone 16",
 		BasePrice:  999.00,
 		CategoryID: cat.ID,
@@ -80,8 +83,9 @@ func TestListCategories(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	svc := catalog.NewCatalogService(store)
+	srv := testutil.SetupTestServer()
+	store := srv.GetDB()
+	svc := service.NewCatalogService(store)
 	ctx := context.Background()
 
 	_, _ = svc.CreateCategory(ctx, "A", pgtype.UUID{})
@@ -96,12 +100,13 @@ func TestListProducts(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	svc := catalog.NewCatalogService(store)
+	srv := testutil.SetupTestServer()
+	store := srv.GetDB()
+	svc := service.NewCatalogService(store)
 	ctx := context.Background()
 
 	cat, _ := svc.CreateCategory(ctx, "C", pgtype.UUID{})
-	_, _ = svc.CreateProduct(ctx, catalog.CreateProductParams{Title: "P1", CategoryID: cat.ID})
+	_, _ = svc.CreateProduct(ctx, service.CreateProductParams{Title: "P1", CategoryID: cat.ID})
 
 	items, err := svc.ListProducts(ctx)
 	assert.NoError(t, err)

@@ -95,3 +95,21 @@ To support both mass-market users (Basic) and premium users (Custom Design) effi
     *   **Cloudflare:** Heavy caching of assets.
     *   **Middleware:** Fiber `etag` and `cache` for Origin protection.
 *   **Tech Stack:** Go 1.24, Fiber v2, Templ, SQLC.
+
+## 5. Code Structure Standard
+All modules in `internal/modules/` MUST follow this structure to ensure separation of concern and testability:
+
+```
+internal/modules/[module_name]/
+├── service/           # Business Logic
+│   ├── service.go     # Service Interface & Implementation
+│   └── types.go       # (Optional) Service-specific types/DTOs
+├── handler/           # API Handling (Fiber)
+│   ├── handler.go     # HTTP Handlers
+│   └── types.go       # Request/Response DTOs
+└── module.go          # Module Initialization (Wiring)
+```
+
+*   **Service:** Contains strictly business logic and DB interactions. MUST NOT depend on Fiber or HTTP specific types.
+*   **Handler:** Contains HTTP logic, parsing, validation, and calls Service methods.
+*   **Module:** Contains `Init(app *server.Server)` to wire the Service and Handler together and register routes.

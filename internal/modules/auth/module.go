@@ -10,7 +10,7 @@ import (
 
 // Init initializes the Auth module: wires the Service/Handler and registers routes.
 func Init(app *server.Server) {
-	svc := service.NewAuthService(app.GetDB(), app.GetTokenMaker())
+	svc := NewAuthService(app)
 	h := handler.NewAuthHandler(svc)
 
 	// Auth Middleware (Global)
@@ -33,4 +33,8 @@ func Init(app *server.Server) {
 
 	// Protected
 	api.Get("/me", authMiddleware, h.Me)
+}
+
+func NewAuthService(app *server.Server) *service.AuthService {
+	return service.NewAuthService(app.GetDB(), app.GetTokenMaker())
 }

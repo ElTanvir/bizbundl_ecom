@@ -6,9 +6,9 @@ import (
 	"time"
 
 	db "bizbundl/internal/db/sqlc"
-	"bizbundl/internal/modules/auth"
-	"bizbundl/internal/modules/cart"
-	"bizbundl/internal/modules/catalog"
+	authservice "bizbundl/internal/modules/auth/service"
+	"bizbundl/internal/modules/cart/service"
+	catalogservice "bizbundl/internal/modules/catalog/service"
 	"bizbundl/internal/testutil"
 
 	"github.com/google/uuid"
@@ -21,14 +21,15 @@ func TestAddToCart(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	cartSvc := cart.NewCartService(store)
-	catalogSvc := catalog.NewCatalogService(store)
+	srv := testutil.SetupTestServer()
+	store := srv.GetDB()
+	cartSvc := service.NewCartService(store)
+	catalogSvc := catalogservice.NewCatalogService(store)
 	ctx := context.Background()
 
 	// Setup Product
 	cat, _ := catalogSvc.CreateCategory(ctx, "Test Cat", pgtype.UUID{})
-	p, err := catalogSvc.CreateProduct(ctx, catalog.CreateProductParams{
+	p, err := catalogSvc.CreateProduct(ctx, catalogservice.CreateProductParams{
 		Title: "Item 1", BasePrice: 100.0, CategoryID: cat.ID,
 	})
 	require.NoError(t, err)
@@ -70,15 +71,16 @@ func TestMergeCarts(t *testing.T) {
 	testutil.Cleanup(t)
 	defer testutil.Cleanup(t)
 
-	store := testutil.SetupTestDB()
-	cartSvc := cart.NewCartService(store)
-	catalogSvc := catalog.NewCatalogService(store)
-	authSvc := auth.NewAuthService(store)
+	srv := testutil.SetupTestServer()
+	store := srv.GetDB()
+	cartSvc := service.NewCartService(store)
+	catalogSvc := catalogservice.NewCatalogService(store)
+	authSvc := authservice.NewAuthService(store, srv.GetTokenMaker())
 	ctx := context.Background()
 
 	// Product
 	cat, _ := catalogSvc.CreateCategory(ctx, "Test Cat 2", pgtype.UUID{})
-	p, _ := catalogSvc.CreateProduct(ctx, catalog.CreateProductParams{Title: "P1", BasePrice: 10.0, CategoryID: cat.ID})
+	p, _ := catalogSvc.CreateProduct(ctx, catalogservice.CreateProductParams{Title: "P1", BasePrice: 10.0, CategoryID: cat.ID})
 
 	// Guest Session (Valid)
 	guestSessionID := uuid.New()
