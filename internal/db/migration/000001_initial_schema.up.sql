@@ -1,70 +1,178 @@
--- #############################################################################
--- ## UP MIGRATION (optimized)
--- #############################################################################
-
-
--- Enable the uuid-ossp extension to use uuid_generate_v4()
+-- Enable Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
--- Enable pg_trgm extension for efficient text search
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
--- -----------------------------------------------------------------------------
--- -- Function to automatically update 'updated_at' timestamps
--- -----------------------------------------------------------------------------
--- This trigger function is designed to be called before any update on a table.
--- It sets the 'updated_at' column of the row being updated to the current time.
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-   NEW.updated_at = now(); 
-   RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- ENUMs for Strict Typing
+CREATE TYPE user_role AS ENUM ('admin', 'staff', 'customer');
+CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'completed', 'cancelled');
 
--- -----------------------------------------------------------------------------
--- -- Enums
--- -----------------------------------------------------------------------------
-CREATE TYPE "user_role" AS ENUM ('user', 'moderator', 'admin');
+-- 1. Users & Auth
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    
+    role user_role NOT NULL DEFAULT 'customer',
+    
+    -- RBAC for Staff: ["manage_products", "view_orders"]
+    permissions JSONB DEFAULT '[]', 
+    
+    phone VARCHAR(20),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_users_email ON users(email);
 
--- -----------------------------------------------------------------------------
--- -- Users Table
--- -----------------------------------------------------------------------------
--- This table stores user account information.
-CREATE TABLE "users" (
-    "id"            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    "hashed_password" VARCHAR(255) NOT NULL,
-    "first_name"    VARCHAR(100),
-    "last_name"     VARCHAR(100),
-    "full_name"     VARCHAR(201) GENERATED ALWAYS AS (COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')) STORED,
-    "email"         VARCHAR(255) UNIQUE,
-    "phone"         VARCHAR(20) UNIQUE,
-    "role"          "user_role" NOT NULL DEFAULT 'user',
-    "is_email_verified" BOOLEAN NOT NULL DEFAULT FALSE,
-    "is_active"     BOOLEAN NOT NULL DEFAULT TRUE,
-    "created_at"    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "deleted_at"    TIMESTAMPTZ
+-- 2. Configs
+CREATE TABLE store_configs (
+    key VARCHAR(100) PRIMARY KEY,
+    value TEXT NOT NULL,
+    is_encrypted BOOLEAN DEFAULT FALSE,
+    group_name VARCHAR(50) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexing for the 'users' table
--- Note: Unique columns (username, email, phone) automatically get indexes, so we don't need to explicitly create them.
+CREATE TABLE payment_gateways (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    config JSONB NOT NULL DEFAULT '{}', 
+    is_test_mode BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN DEFAULT FALSE,
+    position INT DEFAULT 0
+);
 
--- Index for filtering by role, useful for admin dashboards
-CREATE INDEX ON "users" ("role");
+CREATE TABLE couriers (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    config JSONB NOT NULL DEFAULT '{}',
+    is_active BOOLEAN DEFAULT FALSE,
+    position INT DEFAULT 0
+);
 
--- Index for sorting by creation time, useful for "newest users" queries
-CREATE INDEX ON "users" ("created_at");
+-- 3. Sessions (Guest/Auth)
+CREATE TABLE sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    token VARCHAR(255) UNIQUE NOT NULL,
+    user_id UUID REFERENCES users(id),
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
--- Partial index for soft deletes. This improves performance for queries that
--- filter out deleted users, which is a very common operation.
-CREATE INDEX ON "users" ("deleted_at") WHERE "deleted_at" IS NULL;
+-- 4. Catalog
+CREATE TABLE categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    parent_id UUID REFERENCES categories(id),
+    is_active BOOLEAN DEFAULT TRUE
+);
 
--- GIN indexes for efficient text search using pg_trgm
-CREATE INDEX ON "users" USING GIN ("email" gin_trgm_ops);
-CREATE INDEX ON "users" USING GIN ("full_name" gin_trgm_ops);
+CREATE TABLE products (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    base_price DECIMAL(10, 2) NOT NULL,
+    
+    is_digital BOOLEAN DEFAULT TRUE,
+    file_path VARCHAR(255),
+    
+    category_id UUID REFERENCES categories(id),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_products_search ON products USING GIN (title gin_trgm_ops);
 
--- Trigger to automatically update the 'updated_at' field on user record changes.
-CREATE TRIGGER update_users_updated_at
-BEFORE UPDATE ON "users"
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
+CREATE TABLE product_options (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    name VARCHAR(50) NOT NULL,
+    position INT DEFAULT 0,
+    values TEXT[] NOT NULL
+);
+
+CREATE TABLE product_variants (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    options JSONB,
+    price DECIMAL(10, 2) NOT NULL,
+    compare_at_price DECIMAL(10, 2),
+    sku VARCHAR(100) UNIQUE,
+    stock_quantity INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE
+);
+CREATE UNIQUE INDEX idx_variant_sku ON product_variants (sku);
+
+-- 5. Carts
+CREATE TABLE carts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id),
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE cart_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cart_id UUID REFERENCES carts(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id),
+    variant_id UUID REFERENCES product_variants(id),
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Orders
+CREATE TABLE orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id),
+    guest_info JSONB,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status order_status DEFAULT 'pending',
+    traffic_source VARCHAR(50),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE order_items (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id),
+    variation_id UUID REFERENCES product_variants(id),
+    quantity INT NOT NULL,
+    price_at_booking DECIMAL(10, 2) NOT NULL,
+    download_link_sent BOOLEAN DEFAULT FALSE
+);
+
+-- 7. Builder
+CREATE TABLE pages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    route VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    sections JSONB NOT NULL DEFAULT '[]',
+    is_published BOOLEAN DEFAULT FALSE,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. Analytics (Queue)
+CREATE TABLE analytics_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_name VARCHAR(50) NOT NULL,
+    payload JSONB NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    providers_sent JSONB DEFAULT '[]',
+    retry_count INT DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_events_status ON analytics_events(status) WHERE status = 'pending';
+
+-- A/B Tests
+CREATE TABLE ab_tests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    target_route VARCHAR(100) NOT NULL,
+    variants JSONB NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    start_date TIMESTAMPTZ DEFAULT NOW()
+);
