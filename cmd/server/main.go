@@ -3,11 +3,15 @@ package main
 import (
 	"bizbundl/internal/config"
 	db "bizbundl/internal/db/sqlc"
-	"bizbundl/internal/views"
+	"bizbundl/internal/modules/auth"
+	"bizbundl/internal/modules/cart"
+	"bizbundl/internal/modules/catalog"
 	"bizbundl/internal/server"
+	"bizbundl/internal/views"
 	"bizbundl/util"
 	"context"
 	"os"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -36,6 +40,11 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create server")
 	}
+	// Initialize Modules
+	auth.Init(app)
+	catalog.Init(app)
+	cart.Init(app)
+
 	views.Init(app)
 	log.Fatal().Err(app.Start()).Msg("failed to start server")
 }
