@@ -11,12 +11,57 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type OrderStatus string
+
+const (
+	OrderStatusPending    OrderStatus = "pending"
+	OrderStatusProcessing OrderStatus = "processing"
+	OrderStatusShipped    OrderStatus = "shipped"
+	OrderStatusCompleted  OrderStatus = "completed"
+	OrderStatusCancelled  OrderStatus = "cancelled"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus `json:"order_status"`
+	Valid       bool        `json:"valid"` // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
 type UserRole string
 
 const (
-	UserRoleUser      UserRole = "user"
-	UserRoleModerator UserRole = "moderator"
-	UserRoleAdmin     UserRole = "admin"
+	UserRoleAdmin    UserRole = "admin"
+	UserRoleStaff    UserRole = "staff"
+	UserRoleCustomer UserRole = "customer"
 )
 
 func (e *UserRole) Scan(src interface{}) error {
@@ -54,19 +99,154 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type AbTest struct {
+	ID          pgtype.UUID        `json:"id"`
+	Name        string             `json:"name"`
+	TargetRoute string             `json:"target_route"`
+	Variants    []byte             `json:"variants"`
+	IsActive    *bool              `json:"is_active"`
+	StartDate   pgtype.Timestamptz `json:"start_date"`
+}
+
+type AnalyticsEvent struct {
+	ID            pgtype.UUID        `json:"id"`
+	EventName     string             `json:"event_name"`
+	Payload       []byte             `json:"payload"`
+	Status        *string            `json:"status"`
+	ProvidersSent []byte             `json:"providers_sent"`
+	RetryCount    *int32             `json:"retry_count"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+type Cart struct {
+	ID        pgtype.UUID        `json:"id"`
+	SessionID pgtype.UUID        `json:"session_id"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	Status    *string            `json:"status"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+type CartItem struct {
+	ID        pgtype.UUID        `json:"id"`
+	CartID    pgtype.UUID        `json:"cart_id"`
+	ProductID pgtype.UUID        `json:"product_id"`
+	VariantID pgtype.UUID        `json:"variant_id"`
+	Quantity  int32              `json:"quantity"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type Category struct {
+	ID       pgtype.UUID `json:"id"`
+	Name     string      `json:"name"`
+	Slug     string      `json:"slug"`
+	ParentID pgtype.UUID `json:"parent_id"`
+	IsActive *bool       `json:"is_active"`
+}
+
+type Courier struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Config   []byte `json:"config"`
+	IsActive *bool  `json:"is_active"`
+	Position *int32 `json:"position"`
+}
+
+type Order struct {
+	ID            pgtype.UUID        `json:"id"`
+	UserID        pgtype.UUID        `json:"user_id"`
+	GuestInfo     []byte             `json:"guest_info"`
+	TotalAmount   pgtype.Numeric     `json:"total_amount"`
+	Status        NullOrderStatus    `json:"status"`
+	TrafficSource *string            `json:"traffic_source"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+type OrderItem struct {
+	ID               pgtype.UUID    `json:"id"`
+	OrderID          pgtype.UUID    `json:"order_id"`
+	ProductID        pgtype.UUID    `json:"product_id"`
+	VariationID      pgtype.UUID    `json:"variation_id"`
+	Quantity         int32          `json:"quantity"`
+	PriceAtBooking   pgtype.Numeric `json:"price_at_booking"`
+	DownloadLinkSent *bool          `json:"download_link_sent"`
+}
+
+type Page struct {
+	ID          pgtype.UUID        `json:"id"`
+	Route       string             `json:"route"`
+	Name        string             `json:"name"`
+	Sections    []byte             `json:"sections"`
+	IsPublished *bool              `json:"is_published"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PaymentGateway struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Config     []byte `json:"config"`
+	IsTestMode *bool  `json:"is_test_mode"`
+	IsActive   *bool  `json:"is_active"`
+	Position   *int32 `json:"position"`
+}
+
+type Product struct {
+	ID          pgtype.UUID        `json:"id"`
+	Title       string             `json:"title"`
+	Slug        string             `json:"slug"`
+	Description *string            `json:"description"`
+	BasePrice   pgtype.Numeric     `json:"base_price"`
+	IsDigital   *bool              `json:"is_digital"`
+	FilePath    *string            `json:"file_path"`
+	CategoryID  pgtype.UUID        `json:"category_id"`
+	IsActive    *bool              `json:"is_active"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type ProductOption struct {
+	ID        pgtype.UUID `json:"id"`
+	ProductID pgtype.UUID `json:"product_id"`
+	Name      string      `json:"name"`
+	Position  *int32      `json:"position"`
+	Values    []string    `json:"values"`
+}
+
+type ProductVariant struct {
+	ID             pgtype.UUID    `json:"id"`
+	ProductID      pgtype.UUID    `json:"product_id"`
+	Title          string         `json:"title"`
+	Options        []byte         `json:"options"`
+	Price          pgtype.Numeric `json:"price"`
+	CompareAtPrice pgtype.Numeric `json:"compare_at_price"`
+	Sku            *string        `json:"sku"`
+	StockQuantity  *int32         `json:"stock_quantity"`
+	IsActive       *bool          `json:"is_active"`
+}
+
+type Session struct {
+	ID        pgtype.UUID        `json:"id"`
+	Token     string             `json:"token"`
+	UserID    pgtype.UUID        `json:"user_id"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type StoreConfig struct {
+	Key         string             `json:"key"`
+	Value       string             `json:"value"`
+	IsEncrypted *bool              `json:"is_encrypted"`
+	GroupName   string             `json:"group_name"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
 type User struct {
-	ID              pgtype.UUID        `json:"id"`
-	Username        *string            `json:"username"`
-	HashedPassword  string             `json:"hashed_password"`
-	FirstName       *string            `json:"first_name"`
-	LastName        *string            `json:"last_name"`
-	FullName        *string            `json:"full_name"`
-	Email           *string            `json:"email"`
-	Phone           *string            `json:"phone"`
-	Role            UserRole           `json:"role"`
-	IsEmailVerified bool               `json:"is_email_verified"`
-	IsActive        bool               `json:"is_active"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
-	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+	ID           pgtype.UUID        `json:"id"`
+	Email        string             `json:"email"`
+	PasswordHash string             `json:"password_hash"`
+	FullName     string             `json:"full_name"`
+	Role         UserRole           `json:"role"`
+	Permissions  []byte             `json:"permissions"`
+	Phone        *string            `json:"phone"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }

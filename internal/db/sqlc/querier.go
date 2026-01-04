@@ -11,13 +11,26 @@ import (
 )
 
 type Querier interface {
+	CreatePaymentGateway(ctx context.Context, arg CreatePaymentGatewayParams) (PaymentGateway, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
+	CreateStoreConfig(ctx context.Context, arg CreateStoreConfigParams) (StoreConfig, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteExpiredSessions(ctx context.Context) error
+	DeletePaymentGateway(ctx context.Context, id string) error
+	DeleteSession(ctx context.Context, token string) error
+	DeleteStoreConfig(ctx context.Context, key string) error
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
-	GetUserByEmailOrUsername(ctx context.Context, email *string) (User, error)
+	GetPaymentGateway(ctx context.Context, id string) (PaymentGateway, error)
+	GetSession(ctx context.Context, token string) (Session, error)
+	GetStoreConfig(ctx context.Context, key string) (StoreConfig, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
-	HardDeleteUser(ctx context.Context, id pgtype.UUID) error
-	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	GetUserByPhone(ctx context.Context, phone *string) (User, error)
+	ListPaymentGateways(ctx context.Context) ([]PaymentGateway, error)
+	ListStoreConfigs(ctx context.Context) ([]StoreConfig, error)
 	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
+	UpdatePaymentGateway(ctx context.Context, arg UpdatePaymentGatewayParams) (PaymentGateway, error)
+	UpdateStoreConfig(ctx context.Context, arg UpdateStoreConfigParams) (StoreConfig, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

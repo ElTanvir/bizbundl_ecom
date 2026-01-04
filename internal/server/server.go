@@ -97,6 +97,7 @@ func (server *Server) GetTokenMaker() token.Maker {
 func (server *Server) GetConfig() *config.Config {
 	return server.config
 }
+
 func (server *Server) setupStatics() {
 	oneYearInSeconds := 31536000
 	server.router.Static("/static", "./static", fiber.Static{
