@@ -7,7 +7,7 @@ import (
 	"bizbundl/internal/modules/cart"
 	"bizbundl/internal/modules/catalog"
 	"bizbundl/internal/server"
-	"bizbundl/internal/views"
+	"bizbundl/internal/views/frontend"
 	"bizbundl/util"
 	"context"
 	"os"
@@ -45,6 +45,6 @@ func main() {
 	catalog.Init(app)
 	cart.Init(app)
 
-	views.Init(app)
+	frontend.Init(app)
 	log.Fatal().Err(app.Start()).Msg("failed to start server")
 }

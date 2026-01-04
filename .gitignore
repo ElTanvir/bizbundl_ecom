@@ -6,3 +6,4 @@ uploads/
 .env
 next.txt
 /tmp_server
+/server

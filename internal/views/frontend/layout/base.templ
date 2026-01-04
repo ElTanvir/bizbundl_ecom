@@ -1,8 +1,8 @@
-package ui
+package layout
 
 import "bizbundl/internal/store"
 
-templ BaseComponent(headContent string, title string, showHeader bool) {
+templ BaseComponent(headContent templ.Component, title string, showHeader bool) {
 	{{ var criticalCSS = store.CriticalCSS }}
 	<!DOCTYPE html>
 	<html lang="en" class="dark">
@@ -35,8 +35,7 @@ templ BaseComponent(headContent string, title string, showHeader bool) {
 			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 			<title>{ title }</title>
-			@templ.Raw(headContent)
-			
+			@headContent
 		</head>
 		<body
 			x-data="{ mobileMenuOpen: false }"
