@@ -26,6 +26,9 @@ func Init(app *server.Server) {
 		constants.RefreshThreshold,
 	)
 
+	// Apply Auth Middleware Globally (to ensure Guest Session on all routes)
+	app.GetRouter().Use(authMiddleware)
+
 	// Routes
 	api := app.GetRouter().Group("/api/v1/auth")
 

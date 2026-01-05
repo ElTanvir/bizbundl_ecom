@@ -1,0 +1,26 @@
+package ui
+
+templ Toast(message string, linkText string, linkHref string) {
+	<div
+		id="toast-container"
+		class="fixed bottom-4 right-4 z-50 animate-fade-in-up"
+		x-data="{ show: true }"
+		x-show="show"
+		x-init="setTimeout(() => show = false, 5000)"
+	>
+		<div class="bg-surface border border-outline shadow-lg rounded-lg p-4 flex items-center gap-4">
+			<div class="text-green-500">
+				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+			</div>
+			<div>
+				<p class="font-semibold text-on-surface">{ message }</p>
+				if linkText != "" {
+					<a href={ templ.SafeURL(linkHref) } class="text-primary text-sm hover:underline">{ linkText }</a>
+				}
+			</div>
+			<button @click="show = false" class="text-on-surface-variant hover:text-on-surface">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+			</button>
+		</div>
+	</div>
+}

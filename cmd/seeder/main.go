@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
+	"bizbundl/internal/config"
 	db "bizbundl/internal/db/sqlc"
 	"bizbundl/internal/modules/catalog/service"
 
@@ -15,10 +15,8 @@ import (
 
 func main() {
 	// 1. Connect DB
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = "postgres://user:password@localhost:5432/bizbundl_db?sslmode=disable"
-	}
+	cfg := config.Load()
+	dbURL := cfg.DBSourceURL()
 
 	poolConfig, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {

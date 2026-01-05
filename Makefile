@@ -22,5 +22,7 @@ templgen:
 	@templ generate
 twc:
 	tailwindcss -i internal/views/css/input.css -o static/styles.css --minify --watch
+seed:
+	@go run cmd/seeder/main.go
 
 .PHONY: postgres new_migration

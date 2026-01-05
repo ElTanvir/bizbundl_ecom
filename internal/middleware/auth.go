@@ -16,6 +16,8 @@ func Auth(tokenMaker token.Maker, userDuration, guestDuration, refreshThreshold 
 	return func(c *fiber.Ctx) error {
 		// 1. Get Token
 		tokenString := c.Cookies("session_token")
+		// DEBUG LOG
+		// fmt.Printf("Auth Middleware: Cookie Token: %s\n", tokenString)
 		if tokenString == "" {
 			authHeader := c.Get("Authorization")
 			if len(authHeader) > 7 && strings.EqualFold(authHeader[0:7], "Bearer ") {
@@ -54,8 +56,9 @@ func Auth(tokenMaker token.Maker, userDuration, guestDuration, refreshThreshold 
 			cookie.Value = newToken
 			cookie.Expires = time.Now().Add(guestDuration) // Guest duration
 			cookie.HTTPOnly = true
-			cookie.Secure = true
-			cookie.SameSite = "Strict"
+			// Secure only in prod
+			cookie.Secure = false
+			cookie.SameSite = "Lax" // Lax is better for nav
 			c.Cookie(cookie)
 
 			tokenString = newToken

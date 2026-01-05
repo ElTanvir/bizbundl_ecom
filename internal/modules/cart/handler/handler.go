@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bizbundl/internal/modules/cart/service"
+	"bizbundl/internal/views/components/ui"
 	"bizbundl/util"
 	"fmt"
 
@@ -53,6 +54,8 @@ func (h *CartHandler) getContextIdentities(c *fiber.Ctx) (pgtype.UUID, pgtype.UU
 
 func (h *CartHandler) GetCart(c *fiber.Ctx) error {
 	sessID, userID := h.getContextIdentities(c)
+	// DEBUG
+	fmt.Printf("GetCart: SessID=%v UserID=%v\n", sessID, userID)
 
 	// Middleware handles identity extraction
 
@@ -77,8 +80,8 @@ func (h *CartHandler) GetCart(c *fiber.Ctx) error {
 }
 
 type AddItemRequest struct {
-	ProductID string `json:"product_id"`
-	Quantity  int    `json:"quantity"`
+	ProductID string `json:"product_id" form:"product_id"`
+	Quantity  int    `json:"quantity" form:"quantity"`
 }
 
 func (h *CartHandler) AddItem(c *fiber.Ctx) error {
@@ -88,15 +91,33 @@ func (h *CartHandler) AddItem(c *fiber.Ctx) error {
 	}
 
 	sessID, userID := h.getContextIdentities(c)
+	// DEBUG
+	fmt.Printf("AddItem: SessID=%v UserID=%v ProductID=%s\n", sessID, userID, req.ProductID)
 
 	var pID pgtype.UUID
 	if err := pID.Scan(req.ProductID); err != nil {
 		return util.APIError(c, fiber.StatusBadRequest, fmt.Errorf("invalid product id"))
 	}
 
+	// Default quantity
+	if req.Quantity <= 0 {
+		req.Quantity = 1
+	}
+
 	item, err := h.service.AddToCart(c.Context(), sessID, userID, pID, pgtype.UUID{}, int32(req.Quantity))
 	if err != nil {
 		return util.APIError(c, fiber.StatusInternalServerError, err)
+	}
+
+	// HTMX / Toast Response
+	if c.Get("HX-Request") == "true" {
+		msg := fmt.Sprintf("Added %d item(s) to cart", req.Quantity)
+		return util.Render(c, ui.Toast(msg, "View Cart", "/cart"))
+	}
+
+	// Interactive Check: If Context accepts HTML or is Form submit (fallback), redirect to Cart.
+	if c.Get("Content-Type") == "application/x-www-form-urlencoded" {
+		return c.Redirect("/cart")
 	}
 
 	return util.JSON(c, fiber.StatusOK, item, "Item added to cart")

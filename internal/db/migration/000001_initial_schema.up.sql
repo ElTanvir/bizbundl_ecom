@@ -77,12 +77,14 @@ CREATE TABLE products (
     
     is_digital BOOLEAN DEFAULT TRUE,
     file_path VARCHAR(255),
+    is_featured BOOLEAN DEFAULT FALSE, -- Added from mig 0002
     
     category_id UUID REFERENCES categories(id),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX idx_products_search ON products USING GIN (title gin_trgm_ops);
+CREATE INDEX idx_products_featured ON products(is_featured) WHERE is_featured = TRUE;
 
 CREATE TABLE product_options (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -108,7 +110,7 @@ CREATE UNIQUE INDEX idx_variant_sku ON product_variants (sku);
 -- 5. Carts
 CREATE TABLE carts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
+    session_id UUID, -- No FK constraint to sessions (mig 0004)
     user_id UUID REFERENCES users(id),
     status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -134,6 +136,8 @@ CREATE TABLE orders (
     total_amount DECIMAL(10, 2) NOT NULL,
     status order_status DEFAULT 'pending',
     traffic_source VARCHAR(50),
+    payment_status VARCHAR(50) DEFAULT 'unpaid', -- Matched with Mig 0003
+    payment_method VARCHAR(50), -- Added from mig 0003
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -142,6 +146,7 @@ CREATE TABLE order_items (
     order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
     product_id UUID REFERENCES products(id),
     variation_id UUID REFERENCES product_variants(id),
+    title VARCHAR(255) NOT NULL, -- Added Snapshot from mig 0003 logic (implied, good practice)
     quantity INT NOT NULL,
     price_at_booking DECIMAL(10, 2) NOT NULL,
     download_link_sent BOOLEAN DEFAULT FALSE

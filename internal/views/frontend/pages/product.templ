@@ -23,14 +23,21 @@ templ Product(p db.Product) {
 							{ *p.Description }
 						</div>
 					}
-					<div class="flex gap-4">
-						<button class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
+					<form
+						hx-post="/cart/items"
+						hx-swap="afterbegin"
+						hx-target="body"
+						class="flex gap-4"
+					>
+						<input type="hidden" name="product_id" value={ util.UUIDToString(p.ID) }/>
+						<input type="hidden" name="quantity" value="1"/>
+						<button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
 							Add to Cart
 						</button>
-						// <button class="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-						//     Waitlist
-						// </button>
-					</div>
+					</form>
+					// <button class="border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+					//     Waitlist
+					// </button>
 				</div>
 			</div>
 		</div>
