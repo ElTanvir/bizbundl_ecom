@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const SessionCookieName = "session_id"
+
 type Config struct {
 	AppPort              string        `mapstructure:"APP_PORT"`
 	DBHost               string        `mapstructure:"DB_HOST"`

@@ -57,3 +57,7 @@ ORDER BY ci.created_at ASC;
 -- name: ClearCart :exec
 DELETE FROM cart_items
 WHERE cart_id = $1;
+
+-- name: DeleteCart :exec
+DELETE FROM carts
+WHERE id = $1;

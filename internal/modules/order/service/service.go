@@ -50,25 +50,30 @@ func (s *OrderService) CreateOrderFromCart(ctx context.Context, userID pgtype.UU
 	var total float64
 	for _, item := range cartItems {
 		// Use BasePrice or VariantPrice
-		price, _ := item.BasePrice.Float64Value()
+		// Handle Numeric -> Float64
+		var price float64
+		baseF8, _ := item.BasePrice.Float64Value()
+		price = baseF8.Float64
+
 		if item.VariantPrice.Valid {
-			price, _ = item.VariantPrice.Float64Value()
+			varF8, _ := item.VariantPrice.Float64Value()
+			price = varF8.Float64
 		}
 		total += price * float64(item.Quantity)
 	}
 
 	// Create Order
-	// We convert float64 to Numeric... this is pain in Go/pgx.
-	// Let's use a helper or string.
 	totalNumeric := pgtype.Numeric{}
 	totalNumeric.Scan(fmt.Sprintf("%.2f", total))
+
+	paymentMethod := "manual"
 
 	orderParam := db.CreateOrderParams{
 		UserID:        userID,
 		TotalAmount:   totalNumeric,
-		Status:        db.OrderStatusPending,
+		Status:        db.NullOrderStatus{OrderStatus: db.OrderStatusPending, Valid: true},
 		PaymentStatus: "unpaid",
-		PaymentMethod: pgtype.Text{String: "manual", Valid: true}, // Default to manual for MVP
+		PaymentMethod: &paymentMethod,
 	}
 
 	// Execute creation
@@ -80,10 +85,15 @@ func (s *OrderService) CreateOrderFromCart(ctx context.Context, userID pgtype.UU
 
 	// Create items
 	for _, item := range cartItems {
-		price, _ := item.BasePrice.Float64Value()
+		var price float64
+		baseF8, _ := item.BasePrice.Float64Value()
+		price = baseF8.Float64
+
 		if item.VariantPrice.Valid {
-			price, _ = item.VariantPrice.Float64Value()
+			varF8, _ := item.VariantPrice.Float64Value()
+			price = varF8.Float64
 		}
+
 		priceNum := pgtype.Numeric{}
 		priceNum.Scan(fmt.Sprintf("%.2f", price))
 

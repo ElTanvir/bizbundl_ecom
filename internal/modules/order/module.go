@@ -13,11 +13,11 @@ type Module struct {
 }
 
 func Init(app *server.Server, cartSvc *cartService.CartService) *Module {
-	svc := service.NewOrderService(app.Store)
+	svc := service.NewOrderService(app.GetDB())
 	h := handler.NewOrderHandler(cartSvc, svc)
 
 	// Register Routes
-	g := app.App.Group("/order")
+	g := app.GetRouter().Group("/order")
 	g.Post("/checkout", h.Checkout)
 	g.Get("/success/:id", h.SuccessPage)
 

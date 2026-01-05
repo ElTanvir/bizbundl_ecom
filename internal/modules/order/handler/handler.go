@@ -29,7 +29,7 @@ func (h *OrderHandler) Checkout(c *fiber.Ctx) error {
 
 	// 1. Get Active Cart
 	// Note: GetCart creates one if not exists, but we want to check if it has items.
-	cart, err := h.cartSvc.GetCart(c.Context(), userID, sessionID)
+	cart, err := h.cartSvc.GetOrCreateCart(c.Context(), sessionID, userID)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Failed to get cart")
 	}
@@ -72,7 +72,6 @@ func (h *OrderHandler) Checkout(c *fiber.Ctx) error {
 
 func (h *OrderHandler) SuccessPage(c *fiber.Ctx) error {
 	idHex := c.Params("id")
-	var idBytes [16]byte
 	// Convert hex to bytes... util helper?
 	// Or just UUID parsing.
 	// Assuming util has UUID parsing from string.

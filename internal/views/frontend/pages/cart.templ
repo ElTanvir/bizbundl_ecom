@@ -36,9 +36,11 @@ templ Cart(cart db.Cart, items []db.GetCartItemsRow) {
 							<span>Subtotal</span>
 							<span class="font-bold">${ util.FormatPrice(calculateSubtotal(items)) }</span>
 						</div>
-						<button class="w-full bg-blue-600 text-white py-3 rounded mt-6 hover:bg-blue-700 transition">
-							Checkout
-						</button>
+						<form action="/order/checkout" method="POST">
+							<button type="submit" class="w-full bg-blue-600 text-white py-3 rounded mt-6 hover:bg-blue-700 transition">
+								Checkout
+							</button>
+						</form>
 					</div>
 				</div>
 			}

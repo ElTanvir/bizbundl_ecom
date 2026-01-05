@@ -7,10 +7,12 @@ import (
 )
 
 // Init initializes the Cart module
-func Init(app *server.Server) {
+func Init(app *server.Server) *service.CartService {
 	svc := service.NewCartService(app.GetDB())
 	handler := handler.NewCartHandler(svc)
 
 	api := app.GetRouter().Group("/api/v1")
 	handler.RegisterRoutes(api)
+
+	return svc
 }

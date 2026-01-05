@@ -6,6 +6,7 @@ import (
 	"bizbundl/internal/modules/auth"
 	"bizbundl/internal/modules/cart"
 	"bizbundl/internal/modules/catalog"
+	"bizbundl/internal/modules/order"
 	"bizbundl/internal/server"
 	"bizbundl/internal/views/frontend"
 	"bizbundl/util"
@@ -43,7 +44,8 @@ func main() {
 	// Initialize Modules
 	auth.Init(app)
 	catalog.Init(app)
-	cart.Init(app)
+	cartSvc := cart.Init(app)
+	order.Init(app, cartSvc)
 
 	frontend.Init(app)
 	log.Fatal().Err(app.Start()).Msg("failed to start server")

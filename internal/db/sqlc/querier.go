@@ -27,6 +27,7 @@ type Querier interface {
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateStoreConfig(ctx context.Context, arg CreateStoreConfigParams) (StoreConfig, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteCart(ctx context.Context, id pgtype.UUID) error
 	DeleteCategory(ctx context.Context, id pgtype.UUID) error
 	DeleteExpiredSessions(ctx context.Context) error
 	DeletePaymentGateway(ctx context.Context, id string) error

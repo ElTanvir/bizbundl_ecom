@@ -90,6 +90,16 @@ func (q *Queries) CreateCart(ctx context.Context, arg CreateCartParams) (Cart, e
 	return i, err
 }
 
+const deleteCart = `-- name: DeleteCart :exec
+DELETE FROM carts
+WHERE id = $1
+`
+
+func (q *Queries) DeleteCart(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteCart, id)
+	return err
+}
+
 const getCartBySession = `-- name: GetCartBySession :one
 SELECT id, session_id, user_id, status, created_at, updated_at FROM carts
 WHERE session_id = $1 AND status = 'active'
