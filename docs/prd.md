@@ -50,8 +50,12 @@ A high-performance, single-tenant e-commerce solution designed for speed and sim
 ### A. Performance & Caching Strategy
 *   **Edge:** Cloudflare for HTML/Assets.
 *   **App Configs (Read-Through Cache):**
-    *   **Critical:** Configs (Payment Keys, Pixel IDs) are read 100x per second.
-    *   **Mechanism:** App checks `MemoryStore` first. Miss -> Read DB -> Populate Memory.
+    *   **Implementation:** In-memory `go-cache` with strict TTLs (Expiration).
+    *   **Rationale:** Shared VPS environment (12GB RAM) demands strict memory management. Unbounded maps are forbidden.
+    *   **Strategies:**
+        *   **Page Configs:** 24-Hour TTL (Static Layouts). Invalidated on Admin Save.
+        *   **Dynamic Data:** 5-Minute TTL (Product Filters).
+        *   **Event-Driven:** "Lazy Consistency" - Order Success invalidates Stock Cache.
     *   **Sync:** Updates to DB immediately invalidate/update the MemoryStore.
 *   **Middleware:** Fiber `etag` and `cache` for Origin protection.
 
@@ -61,8 +65,14 @@ A high-performance, single-tenant e-commerce solution designed for speed and sim
 
 ### B. High-Performance Page Builder (Strict Mode)
 *   **Philosophy:** "Configuration over Design". Admins choose pre-compiled components and map data sources.
-*   **Architecture:** Compiles `.templ` components. No runtime parsing.
-*   **Safety:** Configuration validated at save time (e.g., ensuring a selected category actually exists).
+*   **Architecture: Atomic Component System (`pkg/components`)**
+    *   **Scalability:** Designed for 1000+ components.
+    *   **Structure:** Each component is a self-contained package (Atomic Design):
+        *   `view.templ`: The UI (Visual variations handled internally).
+        *   `resolver.go`: Data fetching logic specific to the component.
+        *   `definition.go`: Registration logic (Self-registering via `init` or explicit wiring).
+    *   **Registry Pattern:** A central Registry (`pkg/components/registry`) maps `type` -> `Renderer` + `Resolver`. This removes massive switch statements and enables `O(1)` component lookup.
+*   **Compiles:** `.templ` components. No runtime parsing.
 *   **Reference:** See [Builder Architecture](docs/builder_architecture.md) for full design.
 
 ### C. Build & Deployment Strategy ("Source-Level Composition")
@@ -108,8 +118,14 @@ internal/modules/[module_name]/
 │   ├── handler.go     # HTTP Handlers
 │   └── types.go       # Request/Response DTOs
 └── module.go          # Module Initialization (Wiring)
+
+pkg/components/[component_name]/  # Atomic Components
+├── view.templ         # UI
+├── resolver.go        # Data Logic
+└── definition.go      # Registration
 ```
 
 *   **Service:** Contains strictly business logic and DB interactions. MUST NOT depend on Fiber or HTTP specific types.
 *   **Handler:** Contains HTTP logic, parsing, validation, and calls Service methods.
 *   **Module:** Contains `Init(app *server.Server)` to wire the Service and Handler together and register routes.
+*   **Pkg/Components:** Atomic self-contained UI+Logic units for the Page Builder.

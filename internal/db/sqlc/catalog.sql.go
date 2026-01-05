@@ -59,10 +59,11 @@ INSERT INTO products (
     is_digital,
     file_path,
     category_id,
-    is_active
+    is_active,
+    is_featured
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
-) RETURNING id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at, is_featured
 `
 
 type CreateProductParams struct {
@@ -74,6 +75,7 @@ type CreateProductParams struct {
 	FilePath    *string        `json:"file_path"`
 	CategoryID  pgtype.UUID    `json:"category_id"`
 	IsActive    *bool          `json:"is_active"`
+	IsFeatured  *bool          `json:"is_featured"`
 }
 
 // Products
@@ -87,6 +89,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		arg.FilePath,
 		arg.CategoryID,
 		arg.IsActive,
+		arg.IsFeatured,
 	)
 	var i Product
 	err := row.Scan(
@@ -100,6 +103,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.CategoryID,
 		&i.IsActive,
 		&i.CreatedAt,
+		&i.IsFeatured,
 	)
 	return i, err
 }
@@ -207,7 +211,7 @@ func (q *Queries) GetCategory(ctx context.Context, id pgtype.UUID) (Category, er
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at FROM products
+SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at, is_featured FROM products
 WHERE id = $1 LIMIT 1
 `
 
@@ -225,12 +229,13 @@ func (q *Queries) GetProduct(ctx context.Context, id pgtype.UUID) (Product, erro
 		&i.CategoryID,
 		&i.IsActive,
 		&i.CreatedAt,
+		&i.IsFeatured,
 	)
 	return i, err
 }
 
 const getProductBySlug = `-- name: GetProductBySlug :one
-SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at FROM products
+SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at, is_featured FROM products
 WHERE slug = $1 LIMIT 1
 `
 
@@ -248,6 +253,7 @@ func (q *Queries) GetProductBySlug(ctx context.Context, slug string) (Product, e
 		&i.CategoryID,
 		&i.IsActive,
 		&i.CreatedAt,
+		&i.IsFeatured,
 	)
 	return i, err
 }
@@ -283,8 +289,86 @@ func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 	return items, nil
 }
 
+const listFeaturedProducts = `-- name: ListFeaturedProducts :many
+SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at, is_featured FROM products
+WHERE is_featured = TRUE AND is_active = TRUE
+ORDER BY created_at DESC
+LIMIT $1
+`
+
+func (q *Queries) ListFeaturedProducts(ctx context.Context, limit int32) ([]Product, error) {
+	rows, err := q.db.Query(ctx, listFeaturedProducts, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Product{}
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Slug,
+			&i.Description,
+			&i.BasePrice,
+			&i.IsDigital,
+			&i.FilePath,
+			&i.CategoryID,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.IsFeatured,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listNewArrivals = `-- name: ListNewArrivals :many
+SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at, is_featured FROM products
+WHERE is_active = TRUE
+ORDER BY created_at DESC
+LIMIT $1
+`
+
+func (q *Queries) ListNewArrivals(ctx context.Context, limit int32) ([]Product, error) {
+	rows, err := q.db.Query(ctx, listNewArrivals, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Product{}
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Slug,
+			&i.Description,
+			&i.BasePrice,
+			&i.IsDigital,
+			&i.FilePath,
+			&i.CategoryID,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.IsFeatured,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listProducts = `-- name: ListProducts :many
-SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at FROM products
+SELECT id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at, is_featured FROM products
 ORDER BY created_at DESC
 `
 
@@ -308,6 +392,7 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 			&i.CategoryID,
 			&i.IsActive,
 			&i.CreatedAt,
+			&i.IsFeatured,
 		); err != nil {
 			return nil, err
 		}
@@ -404,7 +489,7 @@ SET
     category_id = COALESCE($8, category_id),
     is_active = COALESCE($9, is_active)
 WHERE id = $1
-RETURNING id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at
+RETURNING id, title, slug, description, base_price, is_digital, file_path, category_id, is_active, created_at, is_featured
 `
 
 type UpdateProductParams struct {
@@ -443,6 +528,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.CategoryID,
 		&i.IsActive,
 		&i.CreatedAt,
+		&i.IsFeatured,
 	)
 	return i, err
 }

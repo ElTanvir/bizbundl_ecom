@@ -53,7 +53,7 @@ func (s *Settings) GetConfig(ctx context.Context, key string) (string, error) {
 	}
 
 	// 4. Populate L1 Cache
-	store.Get().Set(cacheKey, finalValue)
+	store.Get().SetDefault(cacheKey, finalValue)
 
 	return finalValue, nil
 }
@@ -95,7 +95,7 @@ func (s *Settings) SetConfig(ctx context.Context, key, value, group string, encr
 	}
 
 	// 3. Update L1 Cache
-	store.Get().Set(PrefixConfig+key, value) // Store RAW value in cache for speed
+	store.Get().SetDefault(PrefixConfig+key, value) // Store RAW value in cache for speed
 
 	return nil
 }
@@ -124,7 +124,7 @@ func (s *Settings) GetPaymentGateway(ctx context.Context, id string) (*db.Paymen
 
 	// 3. Populate Memory
 	// We need to return a pointer copy or struct? Store generic `any` works.
-	store.Get().Set(cacheKey, &pg)
+	store.Get().SetDefault(cacheKey, &pg)
 
 	return &pg, nil
 }

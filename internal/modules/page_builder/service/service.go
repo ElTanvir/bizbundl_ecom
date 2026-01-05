@@ -1,9 +1,11 @@
 package service
 
 import (
+	"bizbundl/internal/store"
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	db "bizbundl/internal/db/sqlc"
 
@@ -31,6 +33,13 @@ func NewPageBuilderService(store db.DBStore) *PageBuilderService {
 }
 
 func (s *PageBuilderService) GetPage(ctx context.Context, route string) (*PageConfig, error) {
+	// 1. Cache Check
+	cacheKey := "pb:page:" + route
+	if val, ok := store.Get().Get(cacheKey); ok {
+		return val.(*PageConfig), nil
+	}
+
+	// 2. DB Fetch
 	page, err := s.store.GetPageByRoute(ctx, route)
 	if err != nil {
 		return nil, err
@@ -43,12 +52,17 @@ func (s *PageBuilderService) GetPage(ctx context.Context, route string) (*PageCo
 		}
 	}
 
-	return &PageConfig{
-		ID:       fmt.Sprintf("%x", page.ID.Bytes), // Simplified UUID string
+	cfg := &PageConfig{
+		ID:       fmt.Sprintf("%x", page.ID.Bytes),
 		Route:    page.Route,
 		Title:    page.Name,
 		Sections: sections,
-	}, nil
+	}
+
+	// 3. Cache Set (Pointer) - 24 Hours
+	store.Get().Set(cacheKey, cfg, 24*time.Hour)
+
+	return cfg, nil
 }
 
 func (s *PageBuilderService) SeedDefaults(ctx context.Context) error {

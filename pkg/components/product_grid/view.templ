@@ -1,17 +1,18 @@
-package library
+package product_grid
 
 import (
-	"bizbundl/internal/db/sqlc"
+	db "bizbundl/internal/db/sqlc"
 	"bizbundl/util"
 )
 
-type ProductGridProps struct {
+type Props struct {
 	Title       string
 	Products    []db.Product
 	ViewAllLink string
+	Variant     string // "grid", "carousel"
 }
 
-templ ProductGrid(props ProductGridProps) {
+templ View(props Props) {
 	<section class="py-16 bg-gray-50 dark:bg-gray-900">
 		<div class="container mx-auto px-6">
 			<div class="flex justify-between items-end mb-8">
@@ -23,23 +24,28 @@ templ ProductGrid(props ProductGridProps) {
 			if len(props.Products) == 0 {
 				<p class="text-gray-500">No products to display.</p>
 			} else {
-				<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-					for _, p := range props.Products {
-						// Reusing item card logic. 
-						// Ideally we extract "ProductCard" to internal/views/components/ui/product_card.templ
-						// For now, I'll inline or duplicate, but "Super Modular" suggests extraction.
-						// I will create ui/product_card.templ next and reuse it.
-						@ProductCard(p)
-					}
-				</div>
+				if props.Variant == "carousel" {
+					<div class="flex overflow-x-auto gap-6 pb-4 snap-x">
+						for _, p := range props.Products {
+							<div class="min-w-[280px] snap-center">
+								@ProductCard(p)
+							</div>
+						}
+					</div>
+				} else {
+					<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+						for _, p := range props.Products {
+							@ProductCard(p)
+						}
+					</div>
+				}
 			}
 		</div>
 	</section>
 }
 
-// Temporary inline, will move to UI library
+// Private Atomic Component (Not strictly needing extraction if only used here)
 templ ProductCard(p db.Product) {
-	// Copy logic from home.templ but make it reusable
 	<div class="border rounded-lg p-4 shadow-sm hover:shadow-md transition bg-white dark:bg-gray-800">
 		<div class="h-48 bg-gray-200 rounded mb-4 flex items-center justify-center">
 			<span class="text-gray-400">Image</span>

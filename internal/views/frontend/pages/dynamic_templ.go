@@ -10,10 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	pb "bizbundl/internal/modules/page_builder/service"
-	"bizbundl/internal/views/components/library"
 	"bizbundl/internal/views/frontend/layout"
-	// "bizbundl/util"
-	db "bizbundl/internal/db/sqlc"
+	"bizbundl/pkg/components/registry"
 )
 
 func DynamicPage(page *pb.PageConfig) templ.Component {
@@ -50,37 +48,30 @@ func DynamicPage(page *pb.PageConfig) templ.Component {
 			}
 			ctx = templ.InitializeContext(ctx)
 			for _, section := range page.Sections {
-				switch section.Type {
-				case "hero":
-					templ_7745c5c3_Err = library.Hero(mapHeroProps(section.Props)).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if comp, ok := registry.Get(section.Type); ok {
+					templ_7745c5c3_Err = comp.Renderer(section.Props).Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-				case "product_grid":
-					templ_7745c5c3_Err = library.ProductGrid(mapProductGridProps(section.Props)).Render(ctx, templ_7745c5c3_Buffer)
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				case "rich_text":
-					templ_7745c5c3_Err = library.RichText(mapRichTextProps(section.Props)).Render(ctx, templ_7745c5c3_Buffer)
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				default:
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " <div class=\"bg-red-100 text-red-500 p-4\">Unknown Component: ")
+				} else {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"text-red-500 p-4\">Unknown Component: ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var3 string
 					templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(section.Type)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/dynamic.templ`, Line: 23, Col: 79}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/dynamic.templ`, Line: 16, Col: 67}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -117,72 +108,25 @@ func DynamicHead(page *pb.PageConfig) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<meta name=\"title\" content=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<meta name=\"title\" content=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(page.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/dynamic.templ`, Line: 30, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/dynamic.templ`, Line: 23, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		return nil
 	})
-}
-
-// Mppers (Should be in .go file or inline here if simple)
-
-func mapHeroProps(props map[string]interface{}) library.HeroProps {
-	return library.HeroProps{
-		Title:           getString(props, "Title"),
-		Subtitle:        getString(props, "Subtitle"),
-		ButtonText:      getString(props, "ButtonText"),
-		ButtonLink:      getString(props, "ButtonLink"),
-		BackgroundImage: getString(props, "BackgroundImage"),
-		Align:           getString(props, "Align"),
-	}
-}
-
-func mapProductGridProps(props map[string]interface{}) library.ProductGridProps {
-	p := library.ProductGridProps{
-		Title:       getString(props, "Title"),
-		ViewAllLink: getString(props, "ViewAllLink"),
-	}
-
-	// Extract Products
-	if products, ok := props["Products"].([]db.Product); ok {
-		p.Products = products
-	}
-	return p
-}
-
-func mapRichTextProps(props map[string]interface{}) library.RichTextProps {
-	return library.RichTextProps{
-		Content:   getString(props, "Content"),
-		Container: getBool(props, "Container"),
-	}
-}
-
-func getString(m map[string]interface{}, key string) string {
-	if v, ok := m[key].(string); ok {
-		return v
-	}
-	return ""
-}
-
-func getBool(m map[string]interface{}, key string) bool {
-	if v, ok := m[key].(bool); ok {
-		return v
-	}
-	return false
 }
 
 var _ = templruntime.GeneratedTemplate

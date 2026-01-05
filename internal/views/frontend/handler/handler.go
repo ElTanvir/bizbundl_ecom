@@ -4,6 +4,7 @@ import (
 	db "bizbundl/internal/db/sqlc"
 	cartservice "bizbundl/internal/modules/cart/service"
 	"bizbundl/internal/modules/catalog/service"
+	pb_resolver "bizbundl/internal/modules/page_builder/resolver"
 	pb "bizbundl/internal/modules/page_builder/service"
 	"bizbundl/internal/views/frontend/pages"
 	"bizbundl/util"
@@ -16,13 +17,15 @@ type FrontendHandler struct {
 	catalogService *service.CatalogService
 	cartService    *cartservice.CartService
 	pbService      *pb.PageBuilderService
+	pbResolver     *pb_resolver.PageResolver
 }
 
-func NewFrontendHandler(catalogService *service.CatalogService, cartService *cartservice.CartService, pbService *pb.PageBuilderService) *FrontendHandler {
+func NewFrontendHandler(catalogService *service.CatalogService, cartService *cartservice.CartService, pbService *pb.PageBuilderService, pbResolver *pb_resolver.PageResolver) *FrontendHandler {
 	return &FrontendHandler{
 		catalogService: catalogService,
 		cartService:    cartService,
 		pbService:      pbService,
+		pbResolver:     pbResolver,
 	}
 }
 
@@ -30,32 +33,13 @@ func (h *FrontendHandler) HomePage(c *fiber.Ctx) error {
 	// 1. Fetch Page Config
 	page, err := h.pbService.GetPage(c.Context(), "/")
 	if err != nil {
-		// Fallback or 404? For MVP, if Home is missing (despite seeding), error out or fallback.
-		// Fallback to empty default?
 		return util.APIError(c, fiber.StatusInternalServerError, err)
 	}
 
-	// 2. Data Resolver (Enrichment)
-	// Iterate sections and fetch data if needed.
-	for i, section := range page.Sections {
-		if section.Type == "product_grid" {
-			// Check limit from props
-			limit := 4                                         // Default
-			if l, ok := section.Props["Limit"].(float64); ok { // JSON unmarshals numbers to float64
-				limit = int(l)
-			}
-
-			// Fetch Products
-			// TODO: Add Limit to ListProducts or use Slice. for MVP Slice.
-			allProducts, err := h.catalogService.ListProducts(c.Context())
-			if err == nil {
-				if len(allProducts) > limit {
-					page.Sections[i].Props["Products"] = allProducts[:limit]
-				} else {
-					page.Sections[i].Props["Products"] = allProducts
-				}
-			}
-		}
+	// 2. Resolve Data (Enrichment)
+	if err := h.pbResolver.Resolve(c.Context(), page); err != nil {
+		// Log but proceed? Or error?
+		// For now proceed, sections might differ slightly.
 	}
 
 	// 3. Render Dynamic Page

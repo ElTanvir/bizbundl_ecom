@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/o1egl/paseto v1.0.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0

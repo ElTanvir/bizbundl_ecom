@@ -16,6 +16,8 @@ type Querier interface {
 	CreateCart(ctx context.Context, arg CreateCartParams) (Cart, error)
 	// Categories
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
+	CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error)
+	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
 	CreatePage(ctx context.Context, arg CreatePageParams) (Page, error)
 	CreatePaymentGateway(ctx context.Context, arg CreatePaymentGatewayParams) (PaymentGateway, error)
 	// Products
@@ -37,6 +39,8 @@ type Querier interface {
 	GetCartByUser(ctx context.Context, userID pgtype.UUID) (Cart, error)
 	GetCartItems(ctx context.Context, cartID pgtype.UUID) ([]GetCartItemsRow, error)
 	GetCategory(ctx context.Context, id pgtype.UUID) (Category, error)
+	GetOrder(ctx context.Context, id pgtype.UUID) (Order, error)
+	GetOrderItems(ctx context.Context, orderID pgtype.UUID) ([]OrderItem, error)
 	GetPageByRoute(ctx context.Context, route string) (Page, error)
 	GetPaymentGateway(ctx context.Context, id string) (PaymentGateway, error)
 	GetProduct(ctx context.Context, id pgtype.UUID) (Product, error)
@@ -47,6 +51,9 @@ type Querier interface {
 	GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserByPhone(ctx context.Context, phone *string) (User, error)
 	ListCategories(ctx context.Context) ([]Category, error)
+	ListFeaturedProducts(ctx context.Context, limit int32) ([]Product, error)
+	ListNewArrivals(ctx context.Context, limit int32) ([]Product, error)
+	ListOrdersByUser(ctx context.Context, userID pgtype.UUID) ([]Order, error)
 	ListPages(ctx context.Context) ([]Page, error)
 	ListPaymentGateways(ctx context.Context) ([]PaymentGateway, error)
 	ListProducts(ctx context.Context) ([]Product, error)
@@ -56,6 +63,7 @@ type Querier interface {
 	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) (CartItem, error)
 	UpdateCartUser(ctx context.Context, arg UpdateCartUserParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
+	UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error)
 	UpdatePage(ctx context.Context, arg UpdatePageParams) (Page, error)
 	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 	UpdatePaymentGateway(ctx context.Context, arg UpdatePaymentGatewayParams) (PaymentGateway, error)

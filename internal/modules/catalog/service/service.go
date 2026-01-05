@@ -48,20 +48,13 @@ type CreateProductParams struct {
 	IsDigital   bool
 	FilePath    string
 	CategoryID  pgtype.UUID
+	IsFeatured  bool
 }
 
 func (s *CatalogService) CreateProduct(ctx context.Context, p CreateProductParams) (db.Product, error) {
 	slug := makeSlug(p.Title)
 
-	// Convert float64 to pgtype.Numeric needs care.
-	// For simplicity in MVP, we can use a helper or just "fmt.Sprintf" into checking constraints?
-	// pgtype.Numeric is complex.
-	// Let's assume we have a helper 'floatToNumeric' logic or rely on drivers.
-	// Actually, SQLC with pgx/v5 and `pgtype` requires `.Numeric` struct.
-	// We will implement a simplified `Numeric` creator helper here for now or just pass string.
-
 	priceNumeric := pgtype.Numeric{}
-	// Scan from string to avoid float issues
 	err := priceNumeric.Scan(fmt.Sprintf("%f", p.BasePrice))
 	if err != nil {
 		return db.Product{}, fmt.Errorf("invalid price: %v", err)
@@ -76,6 +69,7 @@ func (s *CatalogService) CreateProduct(ctx context.Context, p CreateProductParam
 		FilePath:    strPtr(p.FilePath),
 		CategoryID:  p.CategoryID,
 		IsActive:    boolPtr(true),
+		IsFeatured:  boolPtr(p.IsFeatured),
 	})
 }
 
@@ -89,6 +83,14 @@ func (s *CatalogService) GetProductBySlug(ctx context.Context, slug string) (db.
 
 func (s *CatalogService) ListProducts(ctx context.Context) ([]db.Product, error) {
 	return s.store.ListProducts(ctx)
+}
+
+func (s *CatalogService) ListFeaturedProducts(ctx context.Context, limit int32) ([]db.Product, error) {
+	return s.store.ListFeaturedProducts(ctx, limit)
+}
+
+func (s *CatalogService) ListNewArrivals(ctx context.Context, limit int32) ([]db.Product, error) {
+	return s.store.ListNewArrivals(ctx, limit)
 }
 
 // -- Utilities --

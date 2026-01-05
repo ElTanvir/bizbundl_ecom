@@ -44,9 +44,10 @@ INSERT INTO products (
     is_digital,
     file_path,
     category_id,
-    is_active
+    is_active,
+    is_featured
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 ) RETURNING *;
 
 -- name: GetProduct :one
@@ -60,6 +61,18 @@ WHERE slug = $1 LIMIT 1;
 -- name: ListProducts :many
 SELECT * FROM products
 ORDER BY created_at DESC;
+
+-- name: ListFeaturedProducts :many
+SELECT * FROM products
+WHERE is_featured = TRUE AND is_active = TRUE
+ORDER BY created_at DESC
+LIMIT $1;
+
+-- name: ListNewArrivals :many
+SELECT * FROM products
+WHERE is_active = TRUE
+ORDER BY created_at DESC
+LIMIT $1;
 
 -- name: UpdateProduct :one
 UPDATE products

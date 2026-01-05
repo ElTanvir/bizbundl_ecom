@@ -160,6 +160,8 @@ type Order struct {
 	Status        NullOrderStatus    `json:"status"`
 	TrafficSource *string            `json:"traffic_source"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	PaymentStatus string             `json:"payment_status"`
+	PaymentMethod *string            `json:"payment_method"`
 }
 
 type OrderItem struct {
@@ -170,6 +172,7 @@ type OrderItem struct {
 	Quantity         int32          `json:"quantity"`
 	PriceAtBooking   pgtype.Numeric `json:"price_at_booking"`
 	DownloadLinkSent *bool          `json:"download_link_sent"`
+	Title            string         `json:"title"`
 }
 
 type Page struct {
@@ -201,6 +204,7 @@ type Product struct {
 	CategoryID  pgtype.UUID        `json:"category_id"`
 	IsActive    *bool              `json:"is_active"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	IsFeatured  *bool              `json:"is_featured"`
 }
 
 type ProductOption struct {

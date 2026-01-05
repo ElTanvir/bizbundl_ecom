@@ -5,7 +5,7 @@ const fbpixelToken = "capi:fbpixelToken"
 
 func SetFBPixel(data string) {
 	s := Get()
-	s.Set(fbpixelkey, data)
+	s.SetDefault(fbpixelkey, data)
 }
 
 func GetFBPixel() string {
@@ -20,7 +20,7 @@ func GetFBPixel() string {
 
 func SetFBPixelToken(data string) {
 	s := Get()
-	s.Set(fbpixelToken, data)
+	s.SetDefault(fbpixelToken, data)
 }
 
 func GetFBPixelToken() string {
@@ -32,4 +32,3 @@ func GetFBPixelToken() string {
 	u, _ := v.(string)
 	return u
 }
-

@@ -11,8 +11,8 @@ import (
 func Init(app *server.Server) {
 	catalogSvc := service.NewCatalogService(app.GetDB())
 	cartSvc := cartservice.NewCartService(app.GetDB())
-	pbSvc := page_builder.Init(app) // Initializes and Seeds
-	h := handler.NewFrontendHandler(catalogSvc, cartSvc, pbSvc)
+	pbModule := page_builder.Init(app, catalogSvc)
+	h := handler.NewFrontendHandler(catalogSvc, cartSvc, pbModule.Service, pbModule.Resolver)
 
 	// Frontend Routes
 	// Serve static assets if needed, but usually handled by Fiber static or Nginx
