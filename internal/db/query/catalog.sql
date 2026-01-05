@@ -116,3 +116,7 @@ WHERE product_id = $1;
 -- name: DeleteVariant :exec
 DELETE FROM product_variants
 WHERE id = $1;
+
+-- name: GetProductVariant :one
+SELECT * FROM product_variants
+WHERE id = $1 LIMIT 1;

@@ -81,6 +81,10 @@ func (s *CatalogService) GetProductBySlug(ctx context.Context, slug string) (db.
 	return s.store.GetProductBySlug(ctx, slug)
 }
 
+func (s *CatalogService) GetProductVariant(ctx context.Context, id pgtype.UUID) (db.ProductVariant, error) {
+	return s.store.GetProductVariant(ctx, id)
+}
+
 func (s *CatalogService) ListProducts(ctx context.Context) ([]db.Product, error) {
 	return s.store.ListProducts(ctx)
 }

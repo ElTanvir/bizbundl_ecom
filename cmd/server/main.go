@@ -43,9 +43,9 @@ func main() {
 	}
 	// Initialize Modules
 	auth.Init(app)
-	catalog.Init(app)
+	catalogSvc := catalog.Init(app)
 	cartSvc := cart.Init(app)
-	order.Init(app, cartSvc)
+	order.Init(app, cartSvc, catalogSvc)
 
 	frontend.Init(app)
 	log.Fatal().Err(app.Start()).Msg("failed to start server")

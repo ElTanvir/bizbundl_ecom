@@ -20,14 +20,14 @@ INSERT INTO orders (
     payment_method
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING id, user_id, guest_info, total_amount, status, traffic_source, created_at, payment_status, payment_method
+) RETURNING id, user_id, guest_info, total_amount, status, traffic_source, payment_status, payment_method, created_at
 `
 
 type CreateOrderParams struct {
 	UserID        pgtype.UUID     `json:"user_id"`
 	TotalAmount   pgtype.Numeric  `json:"total_amount"`
 	Status        NullOrderStatus `json:"status"`
-	PaymentStatus string          `json:"payment_status"`
+	PaymentStatus *string         `json:"payment_status"`
 	PaymentMethod *string         `json:"payment_method"`
 }
 
@@ -47,9 +47,9 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.TotalAmount,
 		&i.Status,
 		&i.TrafficSource,
-		&i.CreatedAt,
 		&i.PaymentStatus,
 		&i.PaymentMethod,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -64,7 +64,7 @@ INSERT INTO order_items (
     title
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, order_id, product_id, variation_id, quantity, price_at_booking, download_link_sent, title
+) RETURNING id, order_id, product_id, variation_id, title, quantity, price_at_booking, download_link_sent
 `
 
 type CreateOrderItemParams struct {
@@ -91,16 +91,16 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 		&i.OrderID,
 		&i.ProductID,
 		&i.VariationID,
+		&i.Title,
 		&i.Quantity,
 		&i.PriceAtBooking,
 		&i.DownloadLinkSent,
-		&i.Title,
 	)
 	return i, err
 }
 
 const getOrder = `-- name: GetOrder :one
-SELECT id, user_id, guest_info, total_amount, status, traffic_source, created_at, payment_status, payment_method FROM orders
+SELECT id, user_id, guest_info, total_amount, status, traffic_source, payment_status, payment_method, created_at FROM orders
 WHERE id = $1 LIMIT 1
 `
 
@@ -114,15 +114,15 @@ func (q *Queries) GetOrder(ctx context.Context, id pgtype.UUID) (Order, error) {
 		&i.TotalAmount,
 		&i.Status,
 		&i.TrafficSource,
-		&i.CreatedAt,
 		&i.PaymentStatus,
 		&i.PaymentMethod,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getOrderItems = `-- name: GetOrderItems :many
-SELECT id, order_id, product_id, variation_id, quantity, price_at_booking, download_link_sent, title FROM order_items
+SELECT id, order_id, product_id, variation_id, title, quantity, price_at_booking, download_link_sent FROM order_items
 WHERE order_id = $1
 `
 
@@ -140,10 +140,10 @@ func (q *Queries) GetOrderItems(ctx context.Context, orderID pgtype.UUID) ([]Ord
 			&i.OrderID,
 			&i.ProductID,
 			&i.VariationID,
+			&i.Title,
 			&i.Quantity,
 			&i.PriceAtBooking,
 			&i.DownloadLinkSent,
-			&i.Title,
 		); err != nil {
 			return nil, err
 		}
@@ -156,7 +156,7 @@ func (q *Queries) GetOrderItems(ctx context.Context, orderID pgtype.UUID) ([]Ord
 }
 
 const listOrdersByUser = `-- name: ListOrdersByUser :many
-SELECT id, user_id, guest_info, total_amount, status, traffic_source, created_at, payment_status, payment_method FROM orders
+SELECT id, user_id, guest_info, total_amount, status, traffic_source, payment_status, payment_method, created_at FROM orders
 WHERE user_id = $1
 ORDER BY created_at DESC
 `
@@ -177,9 +177,9 @@ func (q *Queries) ListOrdersByUser(ctx context.Context, userID pgtype.UUID) ([]O
 			&i.TotalAmount,
 			&i.Status,
 			&i.TrafficSource,
-			&i.CreatedAt,
 			&i.PaymentStatus,
 			&i.PaymentMethod,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -195,13 +195,13 @@ const updateOrderStatus = `-- name: UpdateOrderStatus :one
 UPDATE orders
 SET status = $2, payment_status = $3, updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, guest_info, total_amount, status, traffic_source, created_at, payment_status, payment_method
+RETURNING id, user_id, guest_info, total_amount, status, traffic_source, payment_status, payment_method, created_at
 `
 
 type UpdateOrderStatusParams struct {
 	ID            pgtype.UUID     `json:"id"`
 	Status        NullOrderStatus `json:"status"`
-	PaymentStatus string          `json:"payment_status"`
+	PaymentStatus *string         `json:"payment_status"`
 }
 
 func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
@@ -214,9 +214,9 @@ func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusPa
 		&i.TotalAmount,
 		&i.Status,
 		&i.TrafficSource,
-		&i.CreatedAt,
 		&i.PaymentStatus,
 		&i.PaymentMethod,
+		&i.CreatedAt,
 	)
 	return i, err
 }

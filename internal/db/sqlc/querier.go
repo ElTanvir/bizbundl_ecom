@@ -46,6 +46,7 @@ type Querier interface {
 	GetPaymentGateway(ctx context.Context, id string) (PaymentGateway, error)
 	GetProduct(ctx context.Context, id pgtype.UUID) (Product, error)
 	GetProductBySlug(ctx context.Context, slug string) (Product, error)
+	GetProductVariant(ctx context.Context, id pgtype.UUID) (ProductVariant, error)
 	GetSession(ctx context.Context, token string) (Session, error)
 	GetStoreConfig(ctx context.Context, key string) (StoreConfig, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)

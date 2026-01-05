@@ -23,3 +23,9 @@ func UUIDToString(u pgtype.UUID) string {
 func Int32ToString(n int32) string {
 	return strconv.Itoa(int(n))
 }
+
+func StringToUUID(s string) (pgtype.UUID, error) {
+	var uuid pgtype.UUID
+	err := uuid.Scan(s)
+	return uuid, err
+}

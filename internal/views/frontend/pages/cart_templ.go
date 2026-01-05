@@ -86,7 +86,7 @@ func Cart(cart db.Cart, items []db.GetCartItemsRow) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</span></div><form action=\"/order/checkout\" method=\"POST\"><button type=\"submit\" class=\"w-full bg-blue-600 text-white py-3 rounded mt-6 hover:bg-blue-700 transition\">Checkout</button></form></div></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</span></div><a href=\"/order/checkout\" class=\"block w-full text-center bg-blue-600 text-white py-3 rounded mt-6 hover:bg-blue-700 transition\">Proceed to Checkout</a></div></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -133,7 +133,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs("cart-item-" + util.UUIDToString(item.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 52, Col: 135}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 50, Col: 135}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -146,7 +146,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(item.ProductTitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 56, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 54, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -159,7 +159,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(util.FormatPrice(item.BasePrice))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 58, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 56, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -172,7 +172,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("#cart-item-" + util.UUIDToString(item.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 61, Col: 86}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 59, Col: 86}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -185,7 +185,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(util.UUIDToString(item.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 62, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 60, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -198,7 +198,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(util.Int32ToString(item.Quantity))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 67, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 65, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
@@ -211,7 +211,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("/cart/items/" + util.UUIDToString(item.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 76, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 74, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -224,7 +224,7 @@ func CartItemRow(item db.GetCartItemsRow) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs("#cart-item-" + util.UUIDToString(item.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 77, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/frontend/pages/cart.templ`, Line: 75, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {

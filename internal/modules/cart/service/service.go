@@ -137,3 +137,22 @@ func (s *CartService) MergeCarts(ctx context.Context, sessionID pgtype.UUID, use
 func (s *CartService) GetCartItems(ctx context.Context, cartID pgtype.UUID) ([]db.GetCartItemsRow, error) {
 	return s.store.GetCartItems(ctx, cartID)
 }
+
+// HasPhysicalItems checks if the cart contains any physical items (is_digital = false)
+func (s *CartService) HasPhysicalItems(ctx context.Context, cartID pgtype.UUID) (bool, error) {
+	items, err := s.GetCartItems(ctx, cartID)
+	if err != nil {
+		return false, err
+	}
+	for _, item := range items {
+		// item.IsDigital might need to be joined in query.
+		// DB GetCartItemsRow normally includes Product fields if joined.
+		// Let's assume IsDigital is available or we need to fetch it.
+		// Looking at queries/cart.sql, we usually join products.
+		// If IsDigital is a bool pointer or value.
+		if item.IsDigital != nil && !*item.IsDigital {
+			return true, nil
+		}
+	}
+	return false, nil
+}

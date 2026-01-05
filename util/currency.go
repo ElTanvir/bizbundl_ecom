@@ -15,3 +15,11 @@ func FormatPrice(n pgtype.Numeric) string {
 	}
 	return fmt.Sprintf("%.2f", f.Float64)
 }
+
+func FormatPriceFromNumeric(n pgtype.Numeric) string {
+	return FormatPrice(n)
+}
+
+func FormatPriceFromFloat(f float64) string {
+	return fmt.Sprintf("%.2f", f)
+}

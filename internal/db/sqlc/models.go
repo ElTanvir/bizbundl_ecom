@@ -159,9 +159,9 @@ type Order struct {
 	TotalAmount   pgtype.Numeric     `json:"total_amount"`
 	Status        NullOrderStatus    `json:"status"`
 	TrafficSource *string            `json:"traffic_source"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	PaymentStatus string             `json:"payment_status"`
+	PaymentStatus *string            `json:"payment_status"`
 	PaymentMethod *string            `json:"payment_method"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 }
 
 type OrderItem struct {
@@ -169,10 +169,10 @@ type OrderItem struct {
 	OrderID          pgtype.UUID    `json:"order_id"`
 	ProductID        pgtype.UUID    `json:"product_id"`
 	VariationID      pgtype.UUID    `json:"variation_id"`
+	Title            string         `json:"title"`
 	Quantity         int32          `json:"quantity"`
 	PriceAtBooking   pgtype.Numeric `json:"price_at_booking"`
 	DownloadLinkSent *bool          `json:"download_link_sent"`
-	Title            string         `json:"title"`
 }
 
 type Page struct {
@@ -201,10 +201,10 @@ type Product struct {
 	BasePrice   pgtype.Numeric     `json:"base_price"`
 	IsDigital   *bool              `json:"is_digital"`
 	FilePath    *string            `json:"file_path"`
+	IsFeatured  *bool              `json:"is_featured"`
 	CategoryID  pgtype.UUID        `json:"category_id"`
 	IsActive    *bool              `json:"is_active"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
-	IsFeatured  *bool              `json:"is_featured"`
 }
 
 type ProductOption struct {

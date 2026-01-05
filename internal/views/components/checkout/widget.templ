@@ -1,0 +1,168 @@
+package checkout
+
+import (
+	"bizbundl/internal/db/sqlc"
+	"bizbundl/util"
+)
+
+// CheckoutForm renders the checkout form widget.
+// It adapts to Cart Mode or Direct Mode.
+templ CheckoutForm(cart db.Cart, items []db.GetCartItemsRow, directProduct *db.Product, directVariant *db.ProductVariant, isPhysical bool) {
+	<div id="checkout-widget-container" class="max-w-2xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+		// Header
+		<div class="bg-gray-50 dark:bg-gray-800/50 p-6 border-b border-gray-100 dark:border-gray-800">
+			<h2 class="text-xl font-bold flex items-center gap-2">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+				</svg>
+				Secure Checkout
+			</h2>
+		</div>
+		<div class="p-6 grid gap-8 md:grid-cols-1">
+			// Order Summary
+			<div class="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/20">
+				<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Order Summary</h3>
+				<div class="space-y-3">
+					if directProduct != nil {
+						// Direct Mode
+						<div class="flex justify-between items-start">
+							<div>
+								<p class="font-medium text-gray-900 dark:text-gray-100">{ directProduct.Title }</p>
+								if directVariant != nil {
+									<p class="text-sm text-gray-500">{ directVariant.Title }</p>
+								} else {
+									<p class="text-sm text-gray-500">Standard</p>
+								}
+							</div>
+							<div class="font-bold">
+								if directVariant != nil {
+									${ util.FormatPriceFromNumeric(directVariant.Price) }
+								} else {
+									${ util.FormatPriceFromNumeric(directProduct.BasePrice) }
+								}
+							</div>
+						</div>
+					} else {
+						// Cart Mode
+						for _, item := range items {
+							<div class="flex justify-between items-start text-sm">
+								<div>
+									<span class="font-medium text-gray-900 dark:text-gray-100">{ item.ProductTitle }</span>
+									<span class="text-gray-500 ml-1">x{ util.Int32ToString(item.Quantity) }</span>
+								</div>
+								<span>${ util.FormatPriceFromFloat( calculateItemTotal(item) ) }</span>
+							</div>
+						}
+					}
+					<div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+					<div class="flex justify-between items-center text-lg font-bold">
+						<span>Total</span>
+						<span>
+							if directProduct != nil {
+								if directVariant != nil {
+									${ util.FormatPriceFromNumeric(directVariant.Price) }
+								} else {
+									${ util.FormatPriceFromNumeric(directProduct.BasePrice) }
+								}
+							} else {
+								${ util.FormatPriceFromFloat( calculateCartTotal(items) ) }
+							}
+						</span>
+					</div>
+				</div>
+			</div>
+			// Checkout Form
+			<form hx-post="/order/checkout" hx-target="#checkout-error-container" hx-swap="innerHTML" class="space-y-6">
+				// Direct Checkout Hidden Inputs
+				if directProduct != nil {
+					<input type="hidden" name="direct_product_id" value={ util.UUIDToString(directProduct.ID) }/>
+					if directVariant != nil {
+						<input type="hidden" name="variant_id" value={ util.UUIDToString(directVariant.ID) }/>
+					}
+				}
+				// Customer Info
+				<div class="space-y-4">
+					<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Customer Information</h3>
+					<div class="grid grid-cols-1 gap-4">
+						<div>
+							<label class="block text-sm font-medium mb-1">Full Name</label>
+							<input type="text" name="customer_name" required class="w-full rounded border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="John Doe"/>
+						</div>
+						<div>
+							<label class="block text-sm font-medium mb-1">Email Address</label>
+							<input type="email" name="customer_email" required class="w-full rounded border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="john@example.com"/>
+						</div>
+						<div>
+							<label class="block text-sm font-medium mb-1">Phone (Optional)</label>
+							<input type="tel" name="customer_phone" class="w-full rounded border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="+1..."/>
+						</div>
+					</div>
+				</div>
+				// Address Info (Conditional)
+				if isPhysical {
+					<div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+						<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Shipping Address</h3>
+						<div class="grid grid-cols-1 gap-4">
+							<div>
+								<label class="block text-sm font-medium mb-1">Street Address</label>
+								<input type="text" name="shipping_address" required class="w-full rounded border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="123 Main St"/>
+							</div>
+							<div class="grid grid-cols-2 gap-4">
+								<div>
+									<label class="block text-sm font-medium mb-1">City</label>
+									<input type="text" name="shipping_city" required class="w-full rounded border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2 focus:ring-2 focus:ring-blue-500 outline-none"/>
+								</div>
+								<div>
+									<label class="block text-sm font-medium mb-1">Zip Code</label>
+									<input type="text" name="shipping_zip" required class="w-full rounded border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2 focus:ring-2 focus:ring-blue-500 outline-none"/>
+								</div>
+							</div>
+							<div>
+								<label class="block text-sm font-medium mb-1">Country</label>
+								<select name="shipping_country" class="w-full rounded border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+									<option value="Bangladesh">Bangladesh</option>
+									<option value="USA">United States</option>
+									<option value="UK">United Kingdom</option>
+									// Add more
+								</select>
+							</div>
+						</div>
+					</div>
+				}
+				<div id="checkout-error-container" class="text-red-500 text-sm font-medium"></div>
+				<button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 mt-6">
+					<span class="flex items-center justify-center gap-2">
+						<span>Pay Securely</span>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+						</svg>
+					</span>
+				</button>
+				<p class="text-xs text-center text-gray-500 mt-4">
+					Payments processed securely by UddoktaPay. Your data is encrypted.
+				</p>
+			</form>
+		</div>
+	</div>
+}
+
+// Helper funcs (Go logic inside Templ file helper block or external)
+func calculateItemTotal(item db.GetCartItemsRow) float64 {
+	var price float64
+	baseF8, _ := item.BasePrice.Float64Value()
+	price = baseF8.Float64
+
+	if item.VariantPrice.Valid {
+		varF8, _ := item.VariantPrice.Float64Value()
+		price = varF8.Float64
+	}
+	return price * float64(item.Quantity)
+}
+
+func calculateCartTotal(items []db.GetCartItemsRow) float64 {
+	var total float64
+	for _, item := range items {
+		total += calculateItemTotal(item)
+	}
+	return total
+}
