@@ -2,7 +2,7 @@ package resolver
 
 import (
 	pb "bizbundl/internal/modules/page_builder/service"
-	"bizbundl/pkg/components/registry"
+	"bizbundl/pkgs/components/registry"
 	"context"
 	"fmt"
 )

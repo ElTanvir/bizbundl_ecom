@@ -8,6 +8,8 @@ import (
 	pb "bizbundl/internal/modules/page_builder/service"
 	"bizbundl/internal/views/frontend/pages"
 	"bizbundl/util"
+	"context"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -37,12 +39,46 @@ func (h *FrontendHandler) HomePage(c *fiber.Ctx) error {
 	}
 
 	// 2. Resolve Data (Enrichment)
-	if err := h.pbResolver.Resolve(c.Context(), page); err != nil {
+	// Inject SessionID/UserID into Context for Resolvers (e.g. Checkout Widget)
+	sessID, userID := h.getIdentities(c)
+	// Since fasthttp ctx value is tricky, we rely on our Resolver assuming the values are passed
+	// OR we wrap using standard context.
+	// Resolvers take context.Context. We can wrap it.
+	resolverCtx := context.WithValue(c.Context(), "session_id", sessID)
+	resolverCtx = context.WithValue(resolverCtx, "user_id", userID)
+
+	if err := h.pbResolver.Resolve(resolverCtx, page); err != nil {
 		// Log but proceed? Or error?
 		// For now proceed, sections might differ slightly.
 	}
 
 	// 3. Render Dynamic Page
+	c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+	return pages.DynamicPage(page).Render(c.Context(), c.Response().BodyWriter())
+}
+
+// RenderLandingPage handles dynamic routes (/*)
+func (h *FrontendHandler) RenderLandingPage(c *fiber.Ctx) error {
+	path := c.Path()
+
+	// 1. Fetch Page Config
+	page, err := h.pbService.GetPage(c.Context(), path)
+	if err != nil {
+		// If not found, 404
+		return util.APIError(c, fiber.StatusNotFound, fiber.NewError(fiber.StatusNotFound, "Page not found"))
+	}
+
+	// 2. Resolve Data
+	sessID, userID := h.getIdentities(c)
+	resolverCtx := context.WithValue(c.Context(), "session_id", sessID)
+	resolverCtx = context.WithValue(resolverCtx, "user_id", userID)
+
+	if err := h.pbResolver.Resolve(resolverCtx, page); err != nil {
+		// Log error but attempt render
+		fmt.Printf("Page Resolver Warning: %v\n", err)
+	}
+
+	// 3. Render
 	c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
 	return pages.DynamicPage(page).Render(c.Context(), c.Response().BodyWriter())
 }

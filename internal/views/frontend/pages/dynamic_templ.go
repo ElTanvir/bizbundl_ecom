@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	pb "bizbundl/internal/modules/page_builder/service"
 	"bizbundl/internal/views/frontend/layout"
-	"bizbundl/pkg/components/registry"
+	"bizbundl/pkgs/components/registry"
 )
 
 func DynamicPage(page *pb.PageConfig) templ.Component {

@@ -11,7 +11,7 @@ import (
 func Init(app *server.Server) {
 	catalogSvc := service.NewCatalogService(app.GetDB())
 	cartSvc := cartservice.NewCartService(app.GetDB())
-	pbModule := page_builder.Init(app, catalogSvc)
+	pbModule := page_builder.Init(app, catalogSvc, cartSvc)
 	h := handler.NewFrontendHandler(catalogSvc, cartSvc, pbModule.Service, pbModule.Resolver)
 
 	// Frontend Routes
@@ -22,6 +22,8 @@ func Init(app *server.Server) {
 	routes := app.GetRouter().Group("/")
 	routes.Get("/", h.HomePage)
 	routes.Get("/product/:slug", h.ProductPage)
+	// Dynamic Landing Pages (Catch-All) - Must be last!
+	routes.Get("/*", h.RenderLandingPage)
 
 	// Cart
 	routes.Get("/cart", h.CartPage)

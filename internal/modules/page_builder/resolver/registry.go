@@ -1,13 +1,13 @@
 package resolver
 
 import (
-	pb "bizbundl/internal/modules/page_builder/service"
+	"bizbundl/pkgs/components/registry"
 	"context"
 )
 
 // ComponentResolver defines the contract for resolving data for a specific component type.
 type ComponentResolver interface {
-	Resolve(ctx context.Context, section *pb.Section) error
+	Resolve(ctx context.Context, section *registry.Section) error
 }
 
 // Registry holds the mapping of component types to their resolvers.
@@ -31,7 +31,7 @@ func (r *Registry) Get(componentType string) (ComponentResolver, bool) {
 }
 
 // Resolve delegates resolving to the registered component resolver.
-func (r *Registry) Resolve(ctx context.Context, section *pb.Section) error {
+func (r *Registry) Resolve(ctx context.Context, section *registry.Section) error {
 	resolver, ok := r.Get(section.Type)
 	if !ok {
 		// No resolver needed for this type (e.g., static content like rich_text)

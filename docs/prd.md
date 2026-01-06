@@ -66,12 +66,24 @@ A high-performance, single-tenant e-commerce solution designed for speed and sim
 ### B. High-Performance Page Builder (Strict Mode)
 *   **Philosophy:** "Configuration over Design". Admins choose pre-compiled components and map data sources.
 *   **Architecture: Atomic Component System (`pkg/components`)**
-    *   **Scalability:** Designed for 1000+ components.
+    *   **Scalability:** Designed for 1000+ components (Hero V1...V100).
     *   **Structure:** Each component is a self-contained package (Atomic Design):
-        *   `view.templ`: The UI (Visual variations handled internally).
-        *   `resolver.go`: Data fetching logic specific to the component.
+        *   `view.templ`: The UI (Visual variations handled by `Variant` prop and `switch` logic).
+        *   `resolver.go`: Data fetching logic specific to the component instance. Props are isolated per section.
         *   `definition.go`: Registration logic (Self-registering via `init` or explicit wiring).
-    *   **Registry Pattern:** A central Registry (`pkg/components/registry`) maps `type` -> `Renderer` + `Resolver`. This removes massive switch statements and enables `O(1)` component lookup.
+    *   **Registry Pattern:** A central Registry (`pkg/components/registry`) maps `type` -> `Renderer` + `Resolver`.
+        *   **Safety:** MUST panic/fail on duplicate component registration.
+        *   **AI/MCP Ready:** Registry MUST support exporting a JSON Schema.
+        *   **Variant Schemas:** Registry MUST define data schemas *per variation* (e.g., Hero V4 requires `Timer`, Hero V1 does not) to handling differing data needs.
+        *   **Composition Safety (Slots):** Components MUST define `AllowedChildren` (e.g., A Grid can only contain `ProductCard` or `PromoCard`, not `Hero`) to prevent invalid nesting.
+    *   **Key Components:**
+        *   **Product Grid:** Must support `CardVariant` prop.
+            *   **Global Defaults:** If `CardVariant` is not set on the instance, it MUST resolve to the Store's Global Default configuration (e.g., "Minimal" vs "Standard").
+        *   **Checkout Widget:** A draggable component that turns any page into a Checkout page.
+*   **Routing & Experiments:**
+    *   **Universal Routing:** The Application should prioritize DB-defined routes for *all* HTML pages (Home, Product, Landing). Hardcoded routes should be minimized or migrated to Seeding logic.
+    *   **Dynamic Routing:** catch-all `/*` route implementation.
+    *   **A/B Testing:** The Catch-All route MUST check for active A/B tests.
 *   **Compiles:** `.templ` components. No runtime parsing.
 *   **Reference:** See [Builder Architecture](docs/builder_architecture.md) for full design.
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"bizbundl/internal/store"
+	"bizbundl/pkgs/components/registry"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,16 +13,11 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Section struct {
-	Type  string                 `json:"type"`
-	Props map[string]interface{} `json:"props"`
-}
-
 type PageConfig struct {
-	ID       string    `json:"id"`
-	Route    string    `json:"route"`
-	Title    string    `json:"title"`
-	Sections []Section `json:"sections"`
+	ID       string             `json:"id"`
+	Route    string             `json:"route"`
+	Title    string             `json:"title"`
+	Sections []registry.Section `json:"sections"`
 }
 
 type PageBuilderService struct {
@@ -45,7 +41,7 @@ func (s *PageBuilderService) GetPage(ctx context.Context, route string) (*PageCo
 		return nil, err
 	}
 
-	var sections []Section
+	var sections []registry.Section
 	if len(page.Sections) > 0 {
 		if err := json.Unmarshal(page.Sections, &sections); err != nil {
 			return nil, fmt.Errorf("failed to parse sections: %w", err)
@@ -65,6 +61,53 @@ func (s *PageBuilderService) GetPage(ctx context.Context, route string) (*PageCo
 	return cfg, nil
 }
 
+// ValidatePage checks if the page structure adheres to registry constraints (e.g. AllowedChildren)
+func (s *PageBuilderService) ValidatePage(sections []registry.Section) error {
+	for i, section := range sections {
+		// 1. Check if Component Exists
+		comp, exists := registry.Get(section.Type)
+		if !exists {
+			return fmt.Errorf("section %d: component type '%s' not found", i, section.Type)
+		}
+
+		// 2. Check Children Constraints
+		if childrenRaw, ok := section.Props["children"]; ok {
+			// Try to marshal/unmarshal to []Section to be safe with interface{}
+			// Or just assume it's []interface{} and inspect "type"
+			// For robustness, let's assume standard JSON unmarshal would give []interface{} map[string]interface{}
+
+			// Simple check: If component doesn't allow children but has them -> Error (optional strictness)
+			// But main check is: If it HAS allowed_children, are these children VALID?
+
+			if len(comp.AllowedChildren) > 0 {
+				var children []registry.Section
+				// Helper to convert props["children"] to []Section
+				bytes, _ := json.Marshal(childrenRaw)
+				json.Unmarshal(bytes, &children)
+
+				for _, child := range children {
+					isAllowed := false
+					for _, allowed := range comp.AllowedChildren {
+						if allowed == child.Type {
+							isAllowed = true
+							break
+						}
+					}
+					if !isAllowed {
+						return fmt.Errorf("component '%s' does not allow child '%s'. Allowed: %v", section.Type, child.Type, comp.AllowedChildren)
+					}
+
+					// Recurse
+					if err := s.ValidatePage([]registry.Section{child}); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (s *PageBuilderService) SeedDefaults(ctx context.Context) error {
 	// Check if Home exists
 	_, err := s.store.GetPageByRoute(ctx, "/")
@@ -77,7 +120,7 @@ func (s *PageBuilderService) SeedDefaults(ctx context.Context) error {
 	}
 
 	// Create Default Home
-	defaultSections := []Section{
+	defaultSections := []registry.Section{
 		{
 			Type: "hero",
 			Props: map[string]interface{}{

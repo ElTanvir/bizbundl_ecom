@@ -1,0 +1,85 @@
+package grid
+
+import (
+	db "bizbundl/internal/db/sqlc"
+	"bizbundl/util"
+	"fmt"
+)
+
+type Props struct {
+	Title       string
+	Products    []db.Product
+	ViewAllLink string
+	Variant     string
+	CardVariant string
+}
+
+templ View(props Props) {
+	<section class="py-16 bg-gray-50 dark:bg-gray-900">
+		<div class="container mx-auto px-6">
+			@header(props)
+			if len(props.Products) == 0 {
+				@emptyState()
+			} else {
+				<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+					for _, p := range props.Products {
+						@ProductCard(p, props.CardVariant)
+					}
+				</div>
+			}
+		</div>
+	</section>
+}
+
+templ header(props Props) {
+	<div class="flex justify-between items-end mb-8">
+		<h2 class="text-3xl font-bold">{ props.Title }</h2>
+		if props.ViewAllLink != "" {
+			<a href={ templ.SafeURL(props.ViewAllLink) } class="text-blue-600 hover:underline font-semibold">View All</a>
+		}
+	</div>
+}
+
+templ emptyState() {
+	<p class="text-gray-500">No products to display.</p>
+}
+
+templ ProductCard(p db.Product, variant string) {
+	if variant == "minimal" {
+		<div class="group relative">
+			<div class="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
+				<div class="flex items-center justify-center h-full bg-gray-100 text-gray-400">Image</div>
+			</div>
+			<div class="mt-4 flex justify-between">
+				<div>
+					<h3 class="text-sm text-gray-700">
+						<a href={ templ.SafeURL("/product/" + p.Slug) }>
+							<span aria-hidden="true" class="absolute inset-0"></span>
+							{ p.Title }
+						</a>
+					</h3>
+				</div>
+				<p class="text-sm font-medium text-gray-900">${ util.FormatPrice(p.BasePrice) }</p>
+			</div>
+		</div>
+	} else {
+		// Default "Standard" Card
+		<div class="border rounded-lg p-4 shadow-sm hover:shadow-md transition bg-white dark:bg-gray-800">
+			<div class="h-48 bg-gray-200 rounded mb-4 flex items-center justify-center">
+				<span class="text-gray-400">Image</span>
+			</div>
+			<h3 class="text-lg font-semibold mb-2 truncate"><a href={ templ.SafeURL("/product/" + p.Slug) }>{ p.Title }</a></h3>
+			<div class="flex justify-between items-center mt-4">
+				<span class="text-lg font-bold">${ util.FormatPrice(p.BasePrice) }</span>
+				<button
+					hx-post="/cart/add"
+					hx-vals={ fmt.Sprintf(`{"product_id": "%x"}`, p.ID.Bytes) }
+					hx-swap="none"
+					class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+				>
+					Add
+				</button>
+			</div>
+		</div>
+	}
+}
