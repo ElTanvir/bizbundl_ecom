@@ -41,9 +41,9 @@ A high-performance, single-tenant e-commerce solution designed for speed and sim
     *   **Traffic Split:** Randomly assign users (50/50) to Variant A or B (Sticky Session via Cookie).
     *   **Metrics:** Track Views vs. Conversions (Add to Cart / Purchase) to declare a "Winner".
 2.  **Server-Side Tracking (Unified CAPI):**
-    *   **Module:** One event bus (`Tracker.Send("Purchase", data)`).
-    *   **Integrations:** Meta CAPI, TikTok Events API, GTM Server.
-    *   **Logic:** Asynchronously sends events to all enabled providers to prevent latency.
+    *   **Architecture:** Hybrid Buffer (Session-based) -> Central RabbitMQ Dispatcher.
+    *   **Reference:** See [CAPI Architecture](capi_architecture.md).
+    *   **Logic:** Buffers events locally to enrich with User Data (Email/Phone) before taking to Central Dispatch.
 
 ## 3. Technical Architecture
 
