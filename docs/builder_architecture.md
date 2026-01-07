@@ -1,96 +1,100 @@
-# Architecture: High-Performance "Strict" Component Builder
+# Architecture: Page Builder & Resolver V2
 
-**Goal:** Allow admins to build pages from pre-compiled components without sacrificing performance or safety. "Little Freedom, High Reliability."
+**Goal:** Allow admins to build pages from pre-compiled Atomic Components (`pkg/components`) with high performance and strict type safety.
 
-## 1. Core Philosophy
-*   **Compile Over Interpret:** We do not parse HTML/Templates from the database at runtime. All HTML structures are compiled binaries (`.templ`).
-*   **Structure Over Style:** Admins configure *Data Sources* (e.g., "Category: Electronics"), not *CSS Styles* (e.g., "Padding: 10px").
-*   **Fail Early:** Configuration is validated at "Save Time", ensuring broken pages never reach the database.
+## 1. Core Concepts
+
+### A. Atomic Component System
+We use a **Modular Monolith** approach where each UI block is a self-contained package in `pkg/components/`.
+
+**Structure:**
+```text
+pkg/components/
+├── registry/               # The "Brain". Maps keys ("product_grid") to implementations.
+├── product_grid/           # The "Component".
+│   ├── definition.go       # Registration & Main Dispatcher Logic.
+│   ├── resolver.go         # The "Smart Dispatcher" (Resolver V2).
+│   └── variants/           # Isolated sub-types.
+│       ├── grid/           # Variant A
+│       │   ├── definition.go # Variant Definition
+│       │   └── view.templ    # Unique UI
+│       └── carousel/       # Variant B
+```
+
+### B. The Registry (The Truth Source)
+The `pkgs/components/registry` package holds the map of all available components.
+*   **Safety:** It panics on duplicate registration (Safe Start).
+*   **Type:** `map[string]*Component`.
 
 ---
 
-## 2. Technical Components
+## 2. The "Resolver V2" Flow (Dispatcher Pattern)
 
-### A. The Schema (Database)
-We store the "Layout Configuration" as a JSONB array in the `pages` table.
+Old systems often used a giant `switch` statement or a single resolver for all variants. **Resolver V2** uses a **Dispatcher Pattern**:
 
-**Table:** `pages`
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `UUID` | PK |
-| `route` | `string` | e.g. `/`, `/landing/black-friday` |
-| `sections` | `JSONB` | Array of Section Configs |
+### The Flow:
+1.  **Request:** User requests a page with a `product_grid` section, prop `Variant: "carousel"`.
+2.  **Global Resolver (`product_grid/resolver.go`):**
+    *   The Engine calls the Component's Main Resolver.
+    *   It looks at `props["Variant"]`.
+    *   It checks the Registry: `Does component.Variants["carousel"] have a custom Resolver?`
+3.  **Variant Dispatch:**
+    *   **YES:** It calls `carousel.Resolver.Resolve(ctx, props)`.
+        *   *Result:* Fetches "New Arrivals" (specific to carousel logic).
+    *   **NO:** It falls back to the Default Resolver (`grid`).
+4.  **Result:** The specific data needed for that variant is returned.
 
-**JSON Structure:**
+**Benefit:**
+*   **Isolation:** A "Masonry" variant can have totally different data logic (infinite scroll) than a "Slider" variant (static list), without touching the core code.
+
+---
+
+## 3. How to Add New Things
+
+### A. How to Add a New **Variant** (e.g., "Masonry" for Product Grid)
+1.  **Create Folder:** `pkgs/components/product_grid/variants/masonry/`
+2.  **Create View:** `view.templ`
+    ```go
+    package masonry
+    templ View(props map[string]any) { ... }
+    ```
+3.  **Create Definition:** `definition.go`
+    ```go
+    package masonry
+    func Definition(svc *service.Catalog) registry.VariantDefinition {
+        return registry.VariantDefinition{
+            Name: "masonry",
+            Resolver: &resolver{...}, // Optional: Custom Data Logic
+            Renderer: func(p) { return View(p) },
+        }
+    }
+    ```
+4.  **Register It:** Go to `pkgs/components/product_grid/definition.go` and add:
+    ```go
+    c.Variants["masonry"] = masonry.Definition(catalogSvc)
+    ```
+    *Done! It is now available in the Page Builder.*
+
+### B. How to Add a New **Component** (e.g., "Testimonial")
+1.  **Create Folder:** `pkgs/components/testimonial/`
+2.  **Define Structure:**
+    *   `definition.go`: Define the `Component` struct (Type, Title, Props).
+    *   `view.templ`: The UI.
+3.  **Register It:**
+    *   Go to `cmd/server/main.go` (or your component init module).
+    *   Call `testimonial.Register()`.
+
+---
+
+## 4. Usage in Database
+The DB stores simple JSON. The Resolvers hydrate it.
 ```json
-[
-  {
-    "id": "hero_v1",
-    "props": {
-       "title": "Summer Sale",
-       "bg_image": "/uploads/summer.jpg",
-       "cta_link": "/collections/summer"
-    }
-  },
-  {
-    "id": "product_carousel",
-    "variant": "grid_compact",
-    "data_source": {
-       "type": "category",
-       "value": "electronics",
-       "limit": 8
-    }
+{
+  "type": "product_grid",
+  "props": {
+    "Variant": "carousel",
+    "Limit": 8,
+    "Title": "Hot Deals"
   }
-]
-```
-
-### B. The Registry (Go Interface)
-The core of the system is the `Component` interface. Every "Block" (Hero, Carousel, Text) must implement this.
-
-```go
-type Component interface {
-    // ID returns the unique string identifier (e.g., "hero_v1")
-    ID() string
-
-    // Validate checks if the raw JSON config is valid.
-    // e.g., Checks if "category_id" actually exists in DB.
-    // Runs ONLY when Admin clicks "Save".
-    Validate(ctx context.Context, config json.RawMessage) error
-
-    // FetchData retrieves necessary data for the component.
-    // Runs concurrently at Request time.
-    FetchData(ctx context.Context, config json.RawMessage) (any, error)
-
-    // Render produces the HTML.
-    // Uses the data returned by FetchData.
-    Render(data any) templ.Component
 }
 ```
-
-### C. The Request Lifecycle (Runtime Flow)
-1.  **Request:** User hits `/`.
-2.  **Lookup:** Handler fetches `sections` JSON from DB.
-3.  **Hydration (The "Waterfall" Killer):**
-    *   Handler iterates over sections.
-    *   Launches a **Goroutine** for each component's `FetchData()`.
-    *   Uses `errgroup` to wait for all data concurrently.
-4.  **Rendering:**
-    *   Once data is ready, `base_layout.templ` iterates through sections.
-    *   Calls `registry.Get(id).Render(data)`.
-5.  **Response:** HTML stream sent to user.
-
----
-
-## 3. Safety Mechanisms
-1.  **Validation Hook:** The API endpoint `POST /admin/pages`:
-    *   Decodes JSON.
-    *   Loops through sections -> calls `component.Validate()`.
-    *   **If any fail:** Returns 400 Error ("Category 'X' does not exist").
-    *   **Result:** Impossible to save a broken page configuration.
-2.  **Graceful Degrade:** If `FetchData` fails at runtime (e.g., DB glitch), the component can return a "Empty" state or be skipped entirely, keeping the rest of the page alive.
-
-## 4. Admin UI (The Experience)
-*   **Implementation:** HTMX + JSON Form.
-*   **Sidebar:** List of available components (fetched from Registry).
-*   **Main Area:** Live Preview (iframe) or Block List.
-*   **Editor:** When a block is clicked, a specific Form (defined by the Component) appears to edit `props`.

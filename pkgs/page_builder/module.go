@@ -3,9 +3,9 @@ package page_builder
 import (
 	cart_service "bizbundl/internal/modules/cart/service"
 	catalog_service "bizbundl/internal/modules/catalog/service"
-	"bizbundl/internal/modules/page_builder/resolver"
-	"bizbundl/internal/modules/page_builder/service"
 	"bizbundl/internal/server"
+	"bizbundl/pkgs/page_builder/resolver"
+	"bizbundl/pkgs/page_builder/service"
 	"context"
 
 	// Import Atomic Components

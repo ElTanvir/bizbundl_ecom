@@ -24,6 +24,18 @@ type Config struct {
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+
+	// Redis Config
+	RedisHost     string `mapstructure:"REDIS_HOST"`
+	RedisPort     string `mapstructure:"REDIS_PORT"`
+	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
+	RedisDB       int    `mapstructure:"REDIS_DB"`
+	RedisPrefix   string `mapstructure:"REDIS_PREFIX"`
+
+	// Elastic Config
+	ElasticURL      string `mapstructure:"ELASTIC_URL"`
+	ElasticUsername string `mapstructure:"ELASTIC_USERNAME"`
+	ElasticPassword string `mapstructure:"ELASTIC_PASSWORD"`
 }
 
 func (c *Config) DBSource() string {
@@ -51,6 +63,19 @@ func Load() *Config {
 	v.SetDefault("TOKEN_SYMMETRIC_KEY", "9y$B&E)H@McQfTjWnZr4u7x!A%D*G-Ka")
 	v.SetDefault("ACCESS_TOKEN_DURATION", time.Minute*5)
 	v.SetDefault("REFRESH_TOKEN_DURATION", time.Hour*24*30)
+
+	// Redis Defaults
+	v.SetDefault("REDIS_HOST", "localhost")
+	v.SetDefault("REDIS_PORT", "6379")
+	v.SetDefault("REDIS_PASSWORD", "")
+	v.SetDefault("REDIS_DB", 0)
+	v.SetDefault("REDIS_PREFIX", "bizbundl:")
+
+	// Elastic Defaults
+	// Note: Empty URL implies disabled
+	v.SetDefault("ELASTIC_URL", "")
+	v.SetDefault("ELASTIC_USERNAME", "")
+	v.SetDefault("ELASTIC_PASSWORD", "")
 
 	// Bind environment variables
 	bindEnvs(v, Config{})

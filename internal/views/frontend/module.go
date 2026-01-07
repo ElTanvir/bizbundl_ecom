@@ -3,9 +3,9 @@ package frontend
 import (
 	cartservice "bizbundl/internal/modules/cart/service"
 	"bizbundl/internal/modules/catalog/service"
-	"bizbundl/internal/modules/page_builder"
 	"bizbundl/internal/server"
 	"bizbundl/internal/views/frontend/handler"
+	"bizbundl/pkgs/page_builder"
 )
 
 func Init(app *server.Server) {
