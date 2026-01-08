@@ -31,7 +31,7 @@ func NewPageBuilderService(store db.DBStore) *PageBuilderService {
 func (s *PageBuilderService) GetPage(ctx context.Context, route string) (*PageConfig, error) {
 	// 1. Cache Check
 	cacheKey := "pb:page:" + route
-	if val, ok := store.Get().Get(cacheKey); ok {
+	if val, ok := store.Get().Get(ctx, cacheKey); ok {
 		return val.(*PageConfig), nil
 	}
 
@@ -56,7 +56,7 @@ func (s *PageBuilderService) GetPage(ctx context.Context, route string) (*PageCo
 	}
 
 	// 3. Cache Set (Pointer) - 24 Hours
-	store.Get().Set(cacheKey, cfg, 24*time.Hour)
+	store.Get().Set(ctx, cacheKey, cfg, 24*time.Hour)
 
 	return cfg, nil
 }

@@ -60,8 +60,10 @@ A high-performance, single-tenant e-commerce solution designed for speed and sim
 *   **Middleware:** Fiber `etag` and `cache` for Origin protection.
 
 ### B. Data Model & Isolation
-*   **Database:** One standalone PostgreSQL database per store.
-*   **Security:** Full isolation. Admin has complete control.
+*   **Architecture:** Schema-Based Multi-Tenancy (Shared Database, Isolated Schemas).
+*   **Mechanism:** One Central Postgres Instance. Each Store gets a unique Schema (`shop_123`).
+*   **Isolation:** Native Postgres Schema isolation ensuring Tenant A cannot query Tenant B's tables.
+*   **Efficiency:** Shared Connection Pool and Memory Buffers (Zero RAM overhead per idle tenant).
 
 ### B. High-Performance Page Builder (Strict Mode)
 *   **Philosophy:** "Configuration over Design". Admins choose pre-compiled components and map data sources.
@@ -98,7 +100,8 @@ To support both mass-market users (Basic) and premium users (Custom Design) effi
 *   **Source:** `git/saas-core`.
 *   **Process:** Standard `docker build` of the core repo.
 *   **Result:** `ghcr.io/bizbundl/core:latest`.
-*   **Update:** All "Basic" tier containers pull this single image.
+*   **Architecture:** Stateless Binary capable of switching Schemas dynamically per request.
+*   **Deployment:** Supports **Zero-Downtime Smart Routing** (Blue/Green) deployments. See [Deployment Docs](deployment.md).
 
 #### 3. Pipeline B: The "Custom" Image (Pro Users)
 *   **Source:** Custom Client Repo (`git/client-x`) + `saas-core:builder` base.
@@ -114,7 +117,8 @@ To support both mass-market users (Basic) and premium users (Custom Design) effi
 *   **Code Style:** Strict SOLID/Clean Code.
 *   **No Comments:** Self-documenting/meaningful naming.
 *   **Performance:**
-    *   **Cloudflare:** Heavy caching of assets.
+    *   **CDN:** Cloudflare for Static Assets (Images, CSS, JS) ONLY.
+    *   **HTML Caching:** Strictly controlled via Redis. No Edge Caching for HTML to ensure accurate CAPI tracking.
     *   **Middleware:** Fiber `etag` and `cache` for Origin protection.
 *   **Tech Stack:** Go 1.24, Fiber v2, Templ, SQLC.
 

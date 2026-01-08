@@ -15,18 +15,20 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     email,
     password_hash,
-    full_name,
+    first_name,
+    last_name,
     phone,
     role
 ) VALUES (
-    $1, $2, $3, $4, $5
-) RETURNING id, email, password_hash, full_name, role, permissions, phone, created_at, updated_at
+    $1, $2, $3, $4, $5, $6
+) RETURNING id, email, password_hash, first_name, last_name, role, permissions, phone, created_at, updated_at
 `
 
 type CreateUserParams struct {
 	Email        string   `json:"email"`
 	PasswordHash string   `json:"password_hash"`
-	FullName     string   `json:"full_name"`
+	FirstName    string   `json:"first_name"`
+	LastName     string   `json:"last_name"`
 	Phone        *string  `json:"phone"`
 	Role         UserRole `json:"role"`
 }
@@ -35,7 +37,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Email,
 		arg.PasswordHash,
-		arg.FullName,
+		arg.FirstName,
+		arg.LastName,
 		arg.Phone,
 		arg.Role,
 	)
@@ -44,7 +47,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.Email,
 		&i.PasswordHash,
-		&i.FullName,
+		&i.FirstName,
+		&i.LastName,
 		&i.Role,
 		&i.Permissions,
 		&i.Phone,
@@ -65,7 +69,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, full_name, role, permissions, phone, created_at, updated_at FROM users
+SELECT id, email, password_hash, first_name, last_name, role, permissions, phone, created_at, updated_at FROM users
 WHERE email = $1 LIMIT 1
 `
 
@@ -76,7 +80,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.Email,
 		&i.PasswordHash,
-		&i.FullName,
+		&i.FirstName,
+		&i.LastName,
 		&i.Role,
 		&i.Permissions,
 		&i.Phone,
@@ -87,7 +92,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, email, password_hash, full_name, role, permissions, phone, created_at, updated_at FROM users
+SELECT id, email, password_hash, first_name, last_name, role, permissions, phone, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -98,7 +103,8 @@ func (q *Queries) GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.ID,
 		&i.Email,
 		&i.PasswordHash,
-		&i.FullName,
+		&i.FirstName,
+		&i.LastName,
 		&i.Role,
 		&i.Permissions,
 		&i.Phone,
@@ -109,7 +115,7 @@ func (q *Queries) GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 }
 
 const getUserByPhone = `-- name: GetUserByPhone :one
-SELECT id, email, password_hash, full_name, role, permissions, phone, created_at, updated_at FROM users
+SELECT id, email, password_hash, first_name, last_name, role, permissions, phone, created_at, updated_at FROM users
 WHERE phone = $1 LIMIT 1
 `
 
@@ -120,7 +126,8 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone *string) (User, erro
 		&i.ID,
 		&i.Email,
 		&i.PasswordHash,
-		&i.FullName,
+		&i.FirstName,
+		&i.LastName,
 		&i.Role,
 		&i.Permissions,
 		&i.Phone,
@@ -149,27 +156,30 @@ func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET 
-    full_name = COALESCE($2, full_name),
-    email = COALESCE($3, email),
-    phone = COALESCE($4, phone),
-    role = COALESCE($5, role),
+    first_name = COALESCE($2, first_name),
+    last_name = COALESCE($3, last_name),
+    email = COALESCE($4, email),
+    phone = COALESCE($5, phone),
+    role = COALESCE($6, role),
     updated_at = now()
 WHERE id = $1
-RETURNING id, email, password_hash, full_name, role, permissions, phone, created_at, updated_at
+RETURNING id, email, password_hash, first_name, last_name, role, permissions, phone, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	ID       pgtype.UUID  `json:"id"`
-	FullName *string      `json:"full_name"`
-	Email    *string      `json:"email"`
-	Phone    *string      `json:"phone"`
-	Role     NullUserRole `json:"role"`
+	ID        pgtype.UUID  `json:"id"`
+	FirstName *string      `json:"first_name"`
+	LastName  *string      `json:"last_name"`
+	Email     *string      `json:"email"`
+	Phone     *string      `json:"phone"`
+	Role      NullUserRole `json:"role"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.ID,
-		arg.FullName,
+		arg.FirstName,
+		arg.LastName,
 		arg.Email,
 		arg.Phone,
 		arg.Role,
@@ -179,7 +189,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.ID,
 		&i.Email,
 		&i.PasswordHash,
-		&i.FullName,
+		&i.FirstName,
+		&i.LastName,
 		&i.Role,
 		&i.Permissions,
 		&i.Phone,

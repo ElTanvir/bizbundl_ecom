@@ -9,6 +9,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var TenantKey = "tenant_id"
+
 func NewRedisClient(cfg *config.Config) *redis.Client {
 	addr := fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort)
 	client := redis.NewClient(&redis.Options{
@@ -23,4 +25,16 @@ func NewRedisClient(cfg *config.Config) *redis.Client {
 
 	log.Info().Str("addr", addr).Msg("Connected to Redis")
 	return client
+}
+
+// Key prefixes the key with the tenant ID from the context
+func Key(ctx context.Context, key string) string {
+	if ctx == nil {
+		return key
+	}
+	tenantID, ok := ctx.Value(TenantKey).(string)
+	if !ok || tenantID == "" {
+		return key
+	}
+	return fmt.Sprintf("%s:%s", tenantID, key)
 }

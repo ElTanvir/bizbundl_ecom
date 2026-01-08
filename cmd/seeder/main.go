@@ -29,7 +29,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	store := db.New(conn)
+	store := db.NewStore(conn)
 	catalogSvc := service.NewCatalogService(store)
 	ctx := context.Background()
 

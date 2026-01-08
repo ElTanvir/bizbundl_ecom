@@ -1,14 +1,28 @@
 version: "2"
 
 sql:
-  # User Module
-  - schema: "internal/db/migration"
+  # 1. Tenant Module (Storefront/Customer)
+  - schema: "internal/db/migration/tenant"
     queries: "internal/db/query"
     engine: "postgresql"
     gen:
       go: 
         package: "db"
         out: "internal/db/sqlc"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_interface: true
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+
+  # 2. Platform Module (Admin/Owner)
+  - schema: "internal/db/migration/platform"
+    queries: "internal/db/query/platform"
+    engine: "postgresql"
+    gen:
+      go: 
+        package: "platform"
+        out: "internal/db/sqlc/platform"
         sql_package: "pgx/v5"
         emit_json_tags: true
         emit_interface: true

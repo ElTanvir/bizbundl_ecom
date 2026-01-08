@@ -5,6 +5,7 @@ import (
 	db "bizbundl/internal/db/sqlc"
 	"bizbundl/internal/infra/elastic"
 	"bizbundl/internal/infra/redis"
+	"bizbundl/internal/middleware"
 	cacheStore "bizbundl/internal/store"
 	"bizbundl/token"
 	"fmt"
@@ -54,6 +55,7 @@ func NewServer(config *config.Config, store db.DBStore) (*Server, error) {
 		Storage:      redis.NewFiberStorage(rc),
 	}))
 	app.Use(recover.New())
+	app.Use(middleware.TenancyMiddleware(store))
 	if config.Environment != "development" {
 		app.Use(compress.New(compress.Config{
 			Level: compress.LevelBestSpeed,

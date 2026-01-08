@@ -32,6 +32,13 @@ func NewFrontendHandler(catalogService *service.CatalogService, cartService *car
 }
 
 func (h *FrontendHandler) HomePage(c *fiber.Ctx) error {
+	// 0. Check for Platform Home (Root Domain)
+	tenantID, ok := c.Locals("tenant_id").(string)
+	if !ok || tenantID == "public" || tenantID == "" {
+		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+		return pages.PlatformHome().Render(c.Context(), c.Response().BodyWriter())
+	}
+
 	// 1. Fetch Page Config
 	page, err := h.pbService.GetPage(c.Context(), "/")
 	if err != nil {

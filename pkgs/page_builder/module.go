@@ -6,14 +6,11 @@ import (
 	"bizbundl/internal/server"
 	"bizbundl/pkgs/page_builder/resolver"
 	"bizbundl/pkgs/page_builder/service"
-	"context"
 
 	// Import Atomic Components
 	"bizbundl/pkgs/components/checkout"
 	_ "bizbundl/pkgs/components/hero" // Register internal init()
 	"bizbundl/pkgs/components/product_grid"
-
-	"github.com/rs/zerolog/log"
 )
 
 type PageBuilderModule struct {
@@ -33,12 +30,8 @@ func Init(app *server.Server, catalogSvc *catalog_service.CatalogService, cartSv
 	// Core Resolver
 	res := resolver.NewPageResolver()
 
-	// Seed Defaults
-	if err := svc.SeedDefaults(context.Background()); err != nil {
-		log.Error().Err(err).Msg("Failed to seed default pages")
-	} else {
-		log.Info().Msg("PageBuilder: Default pages seeded/verified")
-	}
+	// SeedDefaults removed from Global Init.
+	// It should be called per-tenant when a shop is provisioned or accessed.
 
 	return &PageBuilderModule{
 		Service:  svc,

@@ -32,7 +32,7 @@ func (s *Settings) GetConfig(ctx context.Context, key string) (string, error) {
 	cacheKey := PrefixConfig + key
 
 	// 1. Check L1 Cache (Memory)
-	if val, ok := store.Get().Get(cacheKey); ok {
+	if val, ok := store.Get().Get(ctx, cacheKey); ok {
 		return val.(string), nil
 	}
 
@@ -53,7 +53,7 @@ func (s *Settings) GetConfig(ctx context.Context, key string) (string, error) {
 	}
 
 	// 4. Populate L1 Cache
-	store.Get().SetDefault(cacheKey, finalValue)
+	store.Get().SetDefault(ctx, cacheKey, finalValue)
 
 	return finalValue, nil
 }
@@ -95,7 +95,7 @@ func (s *Settings) SetConfig(ctx context.Context, key, value, group string, encr
 	}
 
 	// 3. Update L1 Cache
-	store.Get().SetDefault(PrefixConfig+key, value) // Store RAW value in cache for speed
+	store.Get().SetDefault(ctx, PrefixConfig+key, value) // Store RAW value in cache for speed
 
 	return nil
 }
@@ -105,7 +105,7 @@ func (s *Settings) GetPaymentGateway(ctx context.Context, id string) (*db.Paymen
 	cacheKey := PrefixPayment + id
 
 	// 1. Memory Check
-	if val, ok := store.Get().Get(cacheKey); ok {
+	if val, ok := store.Get().Get(ctx, cacheKey); ok {
 		return val.(*db.PaymentGateway), nil
 	}
 
@@ -124,7 +124,7 @@ func (s *Settings) GetPaymentGateway(ctx context.Context, id string) (*db.Paymen
 
 	// 3. Populate Memory
 	// We need to return a pointer copy or struct? Store generic `any` works.
-	store.Get().SetDefault(cacheKey, &pg)
+	store.Get().SetDefault(ctx, cacheKey, &pg)
 
 	return &pg, nil
 }

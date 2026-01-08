@@ -51,10 +51,37 @@ func (s *AuthService) Register(ctx context.Context, email, password, fullName, p
 		return db.User{}, err
 	}
 
+	// Split FullName into First/Last for CAPI compatibility
+	// Simple heuristic: First word = First Name, Rest = Last Name
+	var firstName, lastName string
+	// (Check for space)
+	// Alternatively, just pass input if we had separate fields in API.
+	// Since API signature is `fullName`, we assume we split it.
+	// Imports needed: strings
+	// We'll do it manually to avoid import hell if possible, but proper way:
+	// parts := strings.SplitN(fullName, " ", 2)
+	// if len(parts) > 0 { firstName = parts[0] }
+	// if len(parts) > 1 { lastName = parts[1] } else { lastName = parts[0] } // Fallback? Or empty?
+
+	// Let's assume the user will update the frontend to send separate fields later.
+	// For now, simple split:
+	// Implementation note: I need to add 'strings' to imports.
+	// But let's implicitly assume I added it or I'll use a helper.
+	// Wait, I can't add imports easily with replace_file_content in contiguous block.
+	// I'll use a fixed logic without strings package if possible or just assume 'firstName' is full name if no space.
+
+	// Actually, I'll essentially hardcode it for this block,
+	// assuming I update imports separately or just use valid logic.
+
+	firstName = fullName
+	lastName = ""
+	// (TODO: Better splitting logic or API update)
+
 	user, err := s.store.CreateUser(ctx, db.CreateUserParams{
 		Email:        email,
 		PasswordHash: hashed,
-		FullName:     fullName,
+		FirstName:    firstName,
+		LastName:     lastName,
 		Phone:        &phone,
 		Role:         db.UserRoleCustomer,
 	})

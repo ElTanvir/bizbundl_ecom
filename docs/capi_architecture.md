@@ -17,10 +17,16 @@ This document defines the architecture for the **Conversions API (CAPI)** integr
 | Component | Location | Role | Tech Stack |
 | :--- | :--- | :--- | :--- |
 | **Browser Pixel** | User Device | Real-time signals (`fbp`, `fbc`, IP). | Javascript (GTM) |
-| **Local Buffer** | Client VPS | Generates `event_id`. Buffers events. Enriches data. | Go + Redis |
-| **Central Dispatch** | Central Infrastructure | Validates, Queues, and Sends to Meta/TikTok. | Go + RabbitMQ |
+| **Local Buffer** | App Node (Stateless) | Generates `event_id`. Buffers events in **Tenant Redis**. | Go + Redis |
+| **External Gateway** | Third-Party Service | We post the batch to `CAPI_GATEWAY_URL`. | External HTTP |
 
-### 2.2 The "Hybrid Cache" Workflow (Session Window)
+### 2.2 The Forwarding Workflow
+1.  **Event**: User views page.
+2.  **Buffer**: App pushes event to Redis List `queue:capi`.
+3.  **Worker**:
+    *   Pops event.
+    *   POSTs to `os.Getenv("CAPI_GATEWAY_URL")`.
+    *   (No local RabbitMQ/Logic needed).
 Instead of a strict 24-72h delay (which hurts ad learning), we use a **Session-Based Window** (Max 4 hours).
 
 1.  **Guest Lands:**

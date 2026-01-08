@@ -2,11 +2,12 @@
 INSERT INTO users (
     email,
     password_hash,
-    full_name,
+    first_name,
+    last_name,
     phone,
     role
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6
 ) RETURNING *;
 
 -- name: GetUserById :one
@@ -24,7 +25,8 @@ WHERE phone = $1 LIMIT 1;
 -- name: UpdateUser :one
 UPDATE users
 SET 
-    full_name = COALESCE(sqlc.narg('full_name'), full_name),
+    first_name = COALESCE(sqlc.narg('first_name'), first_name),
+    last_name = COALESCE(sqlc.narg('last_name'), last_name),
     email = COALESCE(sqlc.narg('email'), email),
     phone = COALESCE(sqlc.narg('phone'), phone),
     role = COALESCE(sqlc.narg('role'), role),

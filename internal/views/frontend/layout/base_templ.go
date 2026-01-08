@@ -57,9 +57,11 @@ func BaseComponent(headContent templ.Component, title string, showHeader bool) t
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = headContent.Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+		if headContent != nil {
+			templ_7745c5c3_Err = headContent.Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</head><body x-data=\"{ mobileMenuOpen: false }\" hx-ext=\"preload\" class=\"font-(--font-body) text-on-surface-strong overflow-x-hidden bg-linear-to-br from-surface-alt to-danger\">")
 		if templ_7745c5c3_Err != nil {

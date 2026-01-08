@@ -73,7 +73,7 @@ func Load() *Config {
 
 	// Elastic Defaults
 	// Note: Empty URL implies disabled
-	v.SetDefault("ELASTIC_URL", "")
+	v.SetDefault("ELASTIC_URL", "http://localhost:9200")
 	v.SetDefault("ELASTIC_USERNAME", "")
 	v.SetDefault("ELASTIC_PASSWORD", "")
 

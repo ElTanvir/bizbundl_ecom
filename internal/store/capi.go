@@ -1,16 +1,18 @@
 package store
 
+import "context"
+
 const fbpixelkey = "capi:fbpixelkey"
 const fbpixelToken = "capi:fbpixelToken"
 
-func SetFBPixel(data string) {
+func SetFBPixel(ctx context.Context, data string) {
 	s := Get()
-	s.SetDefault(fbpixelkey, data)
+	s.SetDefault(ctx, fbpixelkey, data)
 }
 
-func GetFBPixel() string {
+func GetFBPixel(ctx context.Context) string {
 	s := Get()
-	v, ok := s.Get(fbpixelkey)
+	v, ok := s.Get(ctx, fbpixelkey)
 	if !ok {
 		return ""
 	}
@@ -18,14 +20,14 @@ func GetFBPixel() string {
 	return u
 }
 
-func SetFBPixelToken(data string) {
+func SetFBPixelToken(ctx context.Context, data string) {
 	s := Get()
-	s.SetDefault(fbpixelToken, data)
+	s.SetDefault(ctx, fbpixelToken, data)
 }
 
-func GetFBPixelToken() string {
+func GetFBPixelToken(ctx context.Context) string {
 	s := Get()
-	v, ok := s.Get(fbpixelToken)
+	v, ok := s.Get(ctx, fbpixelToken)
 	if !ok {
 		return ""
 	}

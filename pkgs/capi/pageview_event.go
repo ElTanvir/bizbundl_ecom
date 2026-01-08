@@ -13,8 +13,8 @@ import (
 )
 
 func SendPageViewEvent(c *fiber.Ctx) {
-	pixelID := store.GetFBPixel()
-	accessToken := store.GetFBPixelToken()
+	pixelID := store.GetFBPixel(c.UserContext())
+	accessToken := store.GetFBPixelToken(c.UserContext())
 	if pixelID == "" || accessToken == "" {
 		return
 	}

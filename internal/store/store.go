@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"time"
@@ -9,37 +10,37 @@ import (
 )
 
 type Store interface {
-	Get(key string) (any, bool)
-	Set(key string, value any, d time.Duration)
-	Delete(key string)
+	Get(ctx context.Context, key string) (any, bool)
+	Set(ctx context.Context, key string, value any, d time.Duration)
+	Delete(ctx context.Context, key string)
 	// Keys is not natively supported efficiently by go-cache without locking, but we can iterate items
-	Keys() []string
-	Clear()
+	Keys(ctx context.Context) []string
+	Clear(ctx context.Context)
 	// Helper for default expiration
-	SetDefault(key string, value any)
+	SetDefault(ctx context.Context, key string, value any)
 }
 
 type goCacheStore struct {
 	c *cache.Cache
 }
 
-func (s *goCacheStore) Get(key string) (any, bool) {
+func (s *goCacheStore) Get(ctx context.Context, key string) (any, bool) {
 	return s.c.Get(key)
 }
 
-func (s *goCacheStore) Set(key string, value any, d time.Duration) {
+func (s *goCacheStore) Set(ctx context.Context, key string, value any, d time.Duration) {
 	s.c.Set(key, value, d)
 }
 
-func (s *goCacheStore) SetDefault(key string, value any) {
+func (s *goCacheStore) SetDefault(ctx context.Context, key string, value any) {
 	s.c.Set(key, value, cache.DefaultExpiration)
 }
 
-func (s *goCacheStore) Delete(key string) {
+func (s *goCacheStore) Delete(ctx context.Context, key string) {
 	s.c.Delete(key)
 }
 
-func (s *goCacheStore) Keys() []string {
+func (s *goCacheStore) Keys(ctx context.Context) []string {
 	// This is expensive as it returns all items, use carefully
 	items := s.c.Items()
 	keys := make([]string, 0, len(items))
@@ -49,7 +50,7 @@ func (s *goCacheStore) Keys() []string {
 	return keys
 }
 
-func (s *goCacheStore) Clear() {
+func (s *goCacheStore) Clear(ctx context.Context) {
 	s.c.Flush()
 }
 

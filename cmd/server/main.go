@@ -7,6 +7,7 @@ import (
 	"bizbundl/internal/modules/cart"
 	"bizbundl/internal/modules/catalog"
 	"bizbundl/internal/modules/order"
+	"bizbundl/internal/modules/platform"
 	"bizbundl/internal/server"
 	"bizbundl/internal/views/frontend"
 	"bizbundl/util"
@@ -27,13 +28,17 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot connect to db")
 	}
-	migrationDir := "internal/db/migration"
+	// Run Platform Migrations (Public Schema) on Startup
+	// Tenant migrations are handled by the worker or when a shop is created.
+	platformMsgDir := "internal/db/migration/platform"
 	if cfg.InDocker == "true" {
-		migrationDir = "/app/internal/db/migration"
+		platformMsgDir = "/app/internal/db/migration/platform"
 	}
-	err = util.RunMigrations(cfg.DBSourceURL(), migrationDir)
+	// Note: We might want to force "search_path=public" here to be safe,
+	// though the default connection usually defaults to public.
+	err = util.RunMigrations(cfg.DBSourceURL(), platformMsgDir)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to run migrations")
+		log.Fatal().Err(err).Msg("failed to run platform migrations")
 	}
 	util.RegisterTagName()
 	dbStore := db.NewStore(connPool)
@@ -46,6 +51,7 @@ func main() {
 	catalogSvc := catalog.Init(app)
 	cartSvc := cart.Init(app)
 	order.Init(app, cartSvc, catalogSvc)
+	platform.Init(app)
 
 	frontend.Init(app)
 	log.Fatal().Err(app.Start()).Msg("failed to start server")

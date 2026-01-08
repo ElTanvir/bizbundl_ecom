@@ -20,6 +20,8 @@ func NewAuthHandler(service *service.AuthService, cartService *cartservice.CartS
 	return &AuthHandler{service: service, cartService: cartService}
 }
 
+// Assuming UserResponse struct is defined elsewhere and has FirstName and LastName fields.
+// Also assuming db.User struct has FirstName and LastName fields instead of FullName.
 func newUserResponse(user db.User) UserResponse {
 	phone := ""
 	if user.Phone != nil {
@@ -28,7 +30,8 @@ func newUserResponse(user db.User) UserResponse {
 	return UserResponse{
 		ID:          user.ID.String(),
 		Email:       user.Email,
-		FullName:    user.FullName,
+		FirstName:   user.FirstName, // Changed from FullName
+		LastName:    user.LastName,  // Added
 		Phone:       phone,
 		Role:        string(user.Role),
 		Permissions: user.Permissions,
