@@ -1,0 +1,22 @@
+package root
+
+templ Home() {
+	@Base("BizBundl - Platform Home") {
+		<div class="flex flex-col items-center justify-center py-20">
+			<h1 class="text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary mb-6">
+				Welcome to BizBundl
+			</h1>
+			<p class="text-xl mb-8 text-on-surface-weak text-center max-w-2xl">
+				The ultimate multi-tenant ecommerce platform. Manage all your shops from one place.
+			</p>
+			<div class="flex gap-4">
+				<a href="/login" class="px-6 py-3 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover transition">
+					Login to Dashboard
+				</a>
+				<a href="/register" class="px-6 py-3 bg-surface-alt border border-border rounded-lg hover:bg-surface-strong transition">
+					Create Account
+				</a>
+			</div>
+		</div>
+	}
+}

@@ -12,7 +12,10 @@ import (
 
 type Querier interface {
 	CreateShop(ctx context.Context, arg CreateShopParams) (Shop, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetShopBySubdomain(ctx context.Context, subdomain string) (Shop, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 	ListShopsByOwner(ctx context.Context, ownerID pgtype.UUID) ([]Shop, error)
 }
 

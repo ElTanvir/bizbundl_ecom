@@ -1,0 +1,57 @@
+package view
+
+import "bizbundl/internal/platform/root/view"
+
+type LoginFormData struct {
+	Email    string
+	Password string
+	Errors   map[string]string
+	Message  string
+}
+
+templ Login(data LoginFormData) {
+	@root.Base("Login - BizBundl Platform") {
+		<div class="max-w-md mx-auto mt-20 bg-surface-strong p-8 rounded-lg shadow-lg border border-border">
+			<h2 class="text-2xl font-bold mb-6 text-center text-primary">Platform Login</h2>
+			if data.Message != "" {
+				<div class="mb-4 p-3 bg-red-900/50 border border-red-500 text-red-100 rounded text-sm">
+					{ data.Message }
+				</div>
+			}
+			<form hx-post="/login" hx-swap="outerHTML" class="space-y-4">
+				<!-- If HTMX fails (e.g. 422), it swaps the form with the response (which will be this form again with errors) -->
+				<div>
+					<label class="block text-sm font-medium mb-1">Email</label>
+					<input
+						type="email"
+						name="email"
+						value={ data.Email }
+						class="w-full px-4 py-2 bg-surface-alt border border-border rounded focus:primary-ring"
+						required
+					/>
+					if err, ok := data.Errors["email"]; ok {
+						<p class="text-xs text-red-400 mt-1">{ err }</p>
+					}
+				</div>
+				<div>
+					<label class="block text-sm font-medium mb-1">Password</label>
+					<input
+						type="password"
+						name="password"
+						class="w-full px-4 py-2 bg-surface-alt border border-border rounded focus:primary-ring"
+						required
+					/>
+					if err, ok := data.Errors["password"]; ok {
+						<p class="text-xs text-red-400 mt-1">{ err }</p>
+					}
+				</div>
+				<button type="submit" class="w-full py-2 bg-primary text-white font-bold rounded hover:bg-primary-hover transition loading-spinner">
+					Login
+				</button>
+				<p class="text-xs text-center text-gray-400 mt-4">
+					Don't have an account? <a href="/register" class="text-primary hover:underline">Register</a>
+				</p>
+			</form>
+		</div>
+	}
+}

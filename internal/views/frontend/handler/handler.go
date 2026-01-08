@@ -2,8 +2,8 @@ package handler
 
 import (
 	db "bizbundl/internal/db/sqlc"
-	cartservice "bizbundl/internal/modules/cart/service"
-	"bizbundl/internal/modules/catalog/service"
+	cartservice "bizbundl/internal/storefront/cart/service"
+	"bizbundl/internal/storefront/catalog/service"
 	"bizbundl/internal/views/frontend/pages"
 	pb_resolver "bizbundl/pkgs/page_builder/resolver"
 	pb "bizbundl/pkgs/page_builder/service"

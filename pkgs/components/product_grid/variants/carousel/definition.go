@@ -2,7 +2,7 @@ package carousel
 
 import (
 	db "bizbundl/internal/db/sqlc"
-	"bizbundl/internal/modules/catalog/service"
+	"bizbundl/internal/storefront/catalog/service"
 	"bizbundl/pkgs/components/registry"
 	"bizbundl/pkgs/components/utils"
 	"context"

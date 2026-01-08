@@ -7,7 +7,7 @@ import (
 
 	"bizbundl/internal/config"
 	db "bizbundl/internal/db/sqlc"
-	"bizbundl/internal/modules/catalog/service"
+	"bizbundl/internal/storefront/catalog/service"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"

@@ -1,8 +1,8 @@
 package frontend
 
 import (
-	cartservice "bizbundl/internal/modules/cart/service"
-	"bizbundl/internal/modules/catalog/service"
+	cartservice "bizbundl/internal/storefront/cart/service"
+	"bizbundl/internal/storefront/catalog/service"
 	"bizbundl/internal/server"
 	"bizbundl/internal/views/frontend/handler"
 	"bizbundl/pkgs/page_builder"

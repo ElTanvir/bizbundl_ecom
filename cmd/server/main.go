@@ -3,12 +3,14 @@ package main
 import (
 	"bizbundl/internal/config"
 	db "bizbundl/internal/db/sqlc"
-	"bizbundl/internal/modules/auth"
-	"bizbundl/internal/modules/cart"
-	"bizbundl/internal/modules/catalog"
-	"bizbundl/internal/modules/order"
-	"bizbundl/internal/modules/platform"
+	"bizbundl/internal/platform"
+	"bizbundl/internal/platform/root"
+	"bizbundl/internal/platform/shops"
 	"bizbundl/internal/server"
+	"bizbundl/internal/storefront/auth"
+	"bizbundl/internal/storefront/cart"
+	"bizbundl/internal/storefront/catalog"
+	"bizbundl/internal/storefront/order"
 	"bizbundl/internal/views/frontend"
 	"bizbundl/util"
 	"context"
@@ -51,6 +53,8 @@ func main() {
 	catalogSvc := catalog.Init(app)
 	cartSvc := cart.Init(app)
 	order.Init(app, cartSvc, catalogSvc)
+	shops.Init(app)
+	root.Init(app)
 	platform.Init(app)
 
 	frontend.Init(app)

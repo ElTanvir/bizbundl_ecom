@@ -1,8 +1,8 @@
 package checkout
 
 import (
-	"bizbundl/internal/modules/cart/service"
-	catalogService "bizbundl/internal/modules/catalog/service"
+	"bizbundl/internal/storefront/cart/service"
+	catalogService "bizbundl/internal/storefront/catalog/service"
 	"bizbundl/pkgs/components/registry"
 
 	"github.com/a-h/templ"

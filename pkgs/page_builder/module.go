@@ -1,8 +1,8 @@
 package page_builder
 
 import (
-	cart_service "bizbundl/internal/modules/cart/service"
-	catalog_service "bizbundl/internal/modules/catalog/service"
+	cart_service "bizbundl/internal/storefront/cart/service"
+	catalog_service "bizbundl/internal/storefront/catalog/service"
 	"bizbundl/internal/server"
 	"bizbundl/pkgs/page_builder/resolver"
 	"bizbundl/pkgs/page_builder/service"
